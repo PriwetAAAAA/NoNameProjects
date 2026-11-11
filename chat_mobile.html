@@ -85,7 +85,8 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
 .mc-logout { width: 100%; padding: 13px; border: none; border-top: 1px solid rgba(120,140,255,.2); background: transparent; color: #ff8a8a; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
 
 .mc-chat { flex: 1; min-width: 0; display: flex; flex-direction: column; border-radius: 20px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.1); -webkit-backdrop-filter: blur(20px) saturate(150%); backdrop-filter: blur(20px) saturate(150%); overflow: hidden; }
-.chat-msgs { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.chat-msgs { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px; display: flex; flex-direction: column; gap: 8px; scrollbar-width: none; }
+.chat-msgs::-webkit-scrollbar { display: none; width: 0; }
 .msg { max-width: 82%; display: flex; flex-direction: column; animation: mcMsgIn .25s ease both; }
 @keyframes mcMsgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .msg.own { align-self: flex-end; align-items: flex-end; }
