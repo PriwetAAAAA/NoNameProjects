@@ -314,6 +314,114 @@ function showAuthError(text) {
     errorEl.style.display = 'block';
 }
 
+// ===== 2-ФАКТОРНАЯ АУТЕНТИФИКАЦИЯ (почта + 4-значный код) =====
+const EMAILJS_CFG = { publicKey: "1QglDVAtlSla_-OVR", serviceId: "service_x4j5klc", templateId: "template_mgnt92q" };
+
+function emailjsAvailable() {
+    return typeof window.emailjs !== 'undefined' && EMAILJS_CFG.publicKey && EMAILJS_CFG.serviceId && EMAILJS_CFG.templateId;
+}
+
+async function getUserEmail(username) {
+    try {
+        const c = getSupabaseClient();
+        if (!c) return null;
+        const { data } = await c.from('profiles').select('email').eq('id', username).maybeSingle();
+        return (data && data.email) || null;
+    } catch (_) { return null; }
+}
+
+async function saveUserEmail(username, email) {
+    try {
+        const c = getSupabaseClient();
+        if (c) await c.from('profiles').upsert({ id: username, name: username, email: email, last_seen: new Date().toISOString() });
+    } catch (_) {}
+}
+
+async function issueCode(email, username) {
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+    try {
+        const c = getSupabaseClient();
+        if (c) await c.from('email_codes').insert([{ owner_id: username, email: email, code: code, purpose: 'login', expires_at: new Date(Date.now() + 600000).toISOString() }]);
+    } catch (_) {}
+    if (emailjsAvailable()) {
+        try {
+            window.emailjs.send(EMAILJS_CFG.serviceId, EMAILJS_CFG.templateId, { to_email: email, code: code, passcode: code, otp: code, time: new Date(Date.now() + 600000).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) });
+        } catch (_) {}
+    }
+    return code;
+}
+
+function remove2faModal() { var m = document.getElementById('nn-2fa-modal'); if (m) m.remove(); }
+
+// Проверка кода (для входа с уже привязанной почтой)
+async function require2faVerify(email, username, onOk) {
+    const code = await issueCode(email, username);
+    remove2faModal();
+    var ov = document.createElement('div');
+    ov.id = 'nn-2fa-modal';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
+    ov.innerHTML = '<div style="background:#0c0e1c;border:1px solid rgba(120,140,255,.3);border-radius:16px;padding:22px;max-width:390px;width:100%;color:#eef0ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">'
+        + '<h3 style="margin:0 0 6px;font-size:17px;">Подтверждение входа</h3>'
+        + '<p style="margin:0 0 14px;font-size:13px;color:#7a80c0;">Код отправлен на <b style="color:#a6adf0;">' + email + '</b>. Введи 4 цифры:</p>'
+        + '<input id="nn2fa-input" type="text" inputmode="numeric" maxlength="4" placeholder="0000" style="width:100%;box-sizing:border-box;min-height:46px;border-radius:11px;border:1px solid rgba(120,140,255,.3);background:rgba(255,255,255,.05);color:#eef0ff;font-size:20px;letter-spacing:10px;text-align:center;outline:none;">'
+        + '<div id="nn2fa-err" style="font-size:12px;color:#ff8a8a;margin-top:8px;min-height:16px;"></div>'
+        + '<div style="display:flex;gap:8px;margin-top:14px;">'
+        + '<button id="nn2fa-ok" style="flex:1;min-height:44px;border:none;border-radius:11px;background:linear-gradient(135deg,#4d7cff,#a855f7);color:#fff;font-weight:700;font-size:15px;cursor:pointer;">Подтвердить</button>'
+        + '<button id="nn2fa-cancel" style="min-height:44px;padding:0 16px;border:1px solid rgba(120,140,255,.3);border-radius:11px;background:transparent;color:#a6adf0;font-size:14px;cursor:pointer;">Отмена</button>'
+        + '</div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('nn2fa-cancel').onclick = remove2faModal;
+    function ok() {
+        var v = document.getElementById('nn2fa-input').value.trim();
+        if (v === code) { remove2faModal(); onOk(); }
+        else { document.getElementById('nn2fa-err').textContent = 'Неверный код'; }
+    }
+    document.getElementById('nn2fa-ok').onclick = ok;
+    document.getElementById('nn2fa-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok(); } });
+    setTimeout(function () { var i = document.getElementById('nn2fa-input'); if (i) i.focus(); }, 100);
+}
+
+// Настройка 2FA (для новых аккаунтов): ввести почту -> код -> сохранить
+function require2faSetup(username, onOk) {
+    remove2faModal();
+    var ov = document.createElement('div');
+    ov.id = 'nn-2fa-modal';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
+    ov.innerHTML = '<div style="background:#0c0e1c;border:1px solid rgba(120,140,255,.3);border-radius:16px;padding:22px;max-width:390px;width:100%;color:#eef0ff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">'
+        + '<h3 style="margin:0 0 6px;font-size:17px;">Настрой 2FA</h3>'
+        + '<p style="margin:0 0 14px;font-size:13px;color:#7a80c0;">Привяжи почту — на неё будет приходить код для входа. Это защитит аккаунт.</p>'
+        + '<input id="nn2fa-email" type="email" placeholder="you@example.com" style="width:100%;box-sizing:border-box;min-height:44px;border-radius:11px;border:1px solid rgba(120,140,255,.3);background:rgba(255,255,255,.05);color:#eef0ff;font-size:15px;padding:0 14px;outline:none;margin-bottom:10px;">'
+        + '<div style="display:flex;gap:8px;margin-bottom:10px;">'
+        + '<button id="nn2fa-send" style="flex:1;min-height:44px;border:1px solid rgba(120,140,255,.3);border-radius:11px;background:transparent;color:#a6adf0;font-size:14px;cursor:pointer;">Отправить код</button>'
+        + '<button id="nn2fa-skip" style="min-height:44px;padding:0 14px;border:none;border-radius:11px;background:transparent;color:#7a80c0;font-size:13px;cursor:pointer;">Пропустить</button>'
+        + '</div>'
+        + '<input id="nn2fa-input" type="text" inputmode="numeric" maxlength="4" placeholder="4-значный код" style="width:100%;box-sizing:border-box;min-height:46px;border-radius:11px;border:1px solid rgba(120,140,255,.3);background:rgba(255,255,255,.05);color:#eef0ff;font-size:20px;letter-spacing:10px;text-align:center;outline:none;">'
+        + '<div id="nn2fa-note" style="font-size:12px;color:#ffd166;margin-top:8px;min-height:16px;"></div>'
+        + '<button id="nn2fa-ok" style="width:100%;min-height:44px;border:none;border-radius:11px;background:linear-gradient(135deg,#4d7cff,#a855f7);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:12px;">Готово</button>'
+        + '</div>';
+    document.body.appendChild(ov);
+
+    var currentEmail = '';
+    var currentCode = '';
+    document.getElementById('nn2fa-skip').onclick = function () { remove2faModal(); onOk(); };
+    document.getElementById('nn2fa-send').onclick = async function () {
+        var em = document.getElementById('nn2fa-email').value.trim();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { document.getElementById('nn2fa-note').textContent = 'Введи корректную почту'; return; }
+        currentEmail = em;
+        currentCode = await issueCode(em, username);
+        document.getElementById('nn2fa-note').textContent = 'Код отправлен на ' + em;
+    };
+    document.getElementById('nn2fa-ok').onclick = async function () {
+        var v = document.getElementById('nn2fa-input').value.trim();
+        if (!currentEmail) { document.getElementById('nn2fa-note').textContent = 'Сначала отправь код'; return; }
+        if (!currentCode || v !== currentCode) { document.getElementById('nn2fa-note').textContent = 'Неверный код'; return; }
+        await saveUserEmail(username, currentEmail);
+        remove2faModal();
+        onOk();
+    };
+    setTimeout(function () { var i = document.getElementById('nn2fa-email'); if (i) i.focus(); }, 100);
+}
+
 async function handleAuthSubmit() {
     const usernameInput = document.getElementById('auth-username');
     const passwordInput = document.getElementById('auth-password');
@@ -360,9 +468,11 @@ async function handleAuthSubmit() {
                 throw new Error('Создание аккаунта: ' + insertError.message);
             }
 
-            localStorage.setItem('steam_user', JSON.stringify({ id: username, name: username, avatar: avatarUrl, password: password }));
             closeAuthModal();
-            updateAuthUI();
+            require2faSetup(username, function () {
+                localStorage.setItem('steam_user', JSON.stringify({ id: username, name: username, avatar: avatarUrl, password: password }));
+                updateAuthUI();
+            });
             return;
         }
 
@@ -373,9 +483,18 @@ async function handleAuthSubmit() {
             return;
         }
 
-        localStorage.setItem('steam_user', JSON.stringify({ id: user.username, name: user.username, avatar: user.avatar_url, password: user.password }));
-        closeAuthModal();
-        updateAuthUI();
+        var email2fa = await getUserEmail(user.username);
+        if (email2fa) {
+            closeAuthModal();
+            require2faVerify(email2fa, user.username, function () {
+                localStorage.setItem('steam_user', JSON.stringify({ id: user.username, name: user.username, avatar: user.avatar_url, password: user.password }));
+                updateAuthUI();
+            });
+        } else {
+            localStorage.setItem('steam_user', JSON.stringify({ id: user.username, name: user.username, avatar: user.avatar_url, password: user.password }));
+            closeAuthModal();
+            updateAuthUI();
+        }
     } catch (err) {
         console.error('[initAuth] Ошибка обращения к базе данных:', err);
         showAuthError('Не удалось обратиться к базе данных: ' + (err && err.message ? err.message : err));
