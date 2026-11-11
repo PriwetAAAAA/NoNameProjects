@@ -370,15 +370,15 @@ body.nnchat-page header { flex-shrink: 0; }
         q(function () { return sb.from('friend_requests').update({ status: 'accepted' }).eq('id', p.id); })
             .then(function () {
                 return q(function () {
-                    return sb.from('friendships').insert([{
+                    return sb.from('friendships').upsert([{
                         a_id: a[0], b_id: a[1],
                         a_name: a[0] === myId ? myName : (p.from_name || p.from_id),
                         b_name: a[1] === myId ? myName : (p.from_name || p.from_id)
-                    }]);
+                    }], { onConflict: 'a_id,b_id', ignoreDuplicates: true });
                 });
             })
             .then(function () { loadFriends(); loadPending(); })
-            .catch(function (e) { alert('Ошибка: ' + (e.message || e)); });
+            .catch(function (e) { console.warn('accept', e); loadFriends(); loadPending(); });
     }
 
     function rejectReq(p) {
@@ -504,7 +504,7 @@ body.nnchat-page header { flex-shrink: 0; }
                 if (!g) throw new Error('группа не создалась');
                 var members = [{ group_id: g.id, user_id: myId, user_name: myName }];
                 checked.forEach(function (c) { members.push({ group_id: g.id, user_id: c.id, user_name: c.name }); });
-                return q(function () { return sb.from('group_members').insert(members); }).then(function () { return g; });
+                return q(function () { return sb.from('group_members').upsert(members, { onConflict: 'group_id,user_id', ignoreDuplicates: true }); }).then(function () { return g; });
             })
             .then(function (g) { loadGroups(); alert('Группа создана: ' + name); })
             .catch(function (e) { alert('Ошибка: ' + (e.message || e)); });
