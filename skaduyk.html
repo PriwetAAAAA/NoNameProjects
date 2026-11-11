@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -126,7 +126,37 @@
         }
         #theme-toggle:hover { background: rgba(255,138,0,.12) !important; color: #ff6a00 !important; }
         #profile-btn { border-color: rgba(255,138,0,.5) !important; }
-    </style>
+    /* ===== LIGHT THEME FIX ===== */
+body.light-theme {
+  --accent-start: #ff7a00;
+  --accent-end: #ff6a00;
+  --btn-primary-bg: linear-gradient(135deg, #ff7a00, #ff6a00);
+  --btn-primary-hover: linear-gradient(135deg, #ff8a1a, #ff8a00);
+}
+body.light-theme .sk-feat,
+body.light-theme .sk-step {
+  background: rgba(255,255,255,.88) !important;
+  border-color: rgba(255,122,0,.3) !important;
+}
+body.light-theme .connect-box {
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(255,122,0,.3) !important;
+}
+body.light-theme .sk-feat h3,
+body.light-theme .sk-step h3,
+body.light-theme .connect-box h2 {
+  color: #1a1020 !important;
+}
+body.light-theme .sk-feat p,
+body.light-theme .sk-step p,
+body.light-theme .connect-box > p {
+  color: #5a4a3d !important;
+}
+body.light-theme .server-ip {
+  background: rgba(255,122,0,.1) !important;
+  color: #b34700 !important;
+}
+</style>
 </head>
 <body>
     <header>

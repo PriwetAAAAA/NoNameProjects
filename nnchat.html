@@ -108,6 +108,44 @@ body.nnchat-page header { flex-shrink: 0; }
   .chat-msgs { padding: 12px; gap: 8px; }
   .msg { max-width: 86%; }
 }
+/* ===== LIGHT THEME FIX ===== */
+body.light-theme .chat-shell {
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(70,90,200,.25) !important;
+  box-shadow: 0 10px 40px rgba(80,100,200,.14) !important;
+}
+body.light-theme .people { background: rgba(240,242,250,.75) !important; }
+body.light-theme .person .on { border-color: #f0f2fa !important; }
+body.light-theme .msg.other .bubble {
+  background: rgba(20,30,80,.06) !important;
+  border-color: rgba(70,90,200,.2) !important;
+  color: #14162e !important;
+}
+body.light-theme .chat-input-bar input {
+  background: #ffffff !important;
+  color: #14162e !important;
+  border-color: rgba(70,90,200,.25) !important;
+}
+body.light-theme .chat-input-bar input::placeholder { color: #8a9098 !important; }
+body.light-theme .nl-card {
+  background: #ffffff !important;
+  border-color: rgba(70,90,200,.25) !important;
+}
+body.light-theme .nl-card h3 { color: #14162e !important; }
+body.light-theme .nl-card p, body.light-theme .nl-card .note { color: #5c626b !important; }
+body.light-theme .nl-card input {
+  background: #f5f7fa !important;
+  color: #14162e !important;
+  border-color: rgba(70,90,200,.2) !important;
+}
+body.light-theme .nl-card .ghost { color: #3d4360 !important; border-color: rgba(70,90,200,.25) !important; }
+body.light-theme .nl-card .close a { color: #6a7090 !important; }
+body.light-theme .chat-top h2 { color: #14162e !important; }
+body.light-theme .chat-msgs .chat-empty { color: #6a7090 !important; }
+body.light-theme .people-head { color: #6a7090 !important; }
+body.light-theme .people-actions button { color: #3d4360 !important; border-color: rgba(70,90,200,.3) !important; }
+body.light-theme .profile-name { color: #14162e !important; }
+body.light-theme .profile-status { color: #6a7090 !important; }
 </style>
 </head>
 <body class="nnchat-page">
