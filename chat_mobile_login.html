@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Вход — NoName</title>
+<link rel="icon" type="image/png" href="mascot.png">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="app.js" defer></script>
+<style>
+body.login-page {
+    height: 100vh; height: 100dvh;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0; padding: 24px;
+    background: #05060f;
+    background-image: linear-gradient(rgba(77,124,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(77,124,255,.06) 1px, transparent 1px);
+    background-size: 44px 44px;
+}
+.login-box {
+    width: 100%; max-width: 380px; text-align: center;
+    background: rgba(10,12,30,.7);
+    border: 1px solid rgba(120,140,255,.25);
+    border-radius: 22px; padding: 34px 26px;
+    box-shadow: 0 0 50px rgba(77,124,255,.2);
+    -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    animation: lgin .5s cubic-bezier(.2,.7,.2,1);
+}
+@keyframes lgin { from { opacity:0; transform: translateY(18px) scale(.97); } to { opacity:1; transform:none; } }
+.login-logo { font-size: 30px; font-weight: 800; color: #eef0ff; }
+.login-logo span { color: #a855f7; }
+.login-box h1 { font-size: 17px; font-weight: 500; color: #a6adf0; margin: 8px 0 24px; }
+.login-box button {
+    width: 100%; min-height: 48px; border-radius: 12px; border: none; cursor: pointer;
+    font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 10px;
+    background: linear-gradient(135deg, #4d7cff, #a855f7);
+    box-shadow: 0 4px 18px rgba(124,58,237,.35), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.login-box button.ghost {
+    background: transparent; color: #a6adf0;
+    border: 1px solid rgba(120,140,255,.3); box-shadow: none;
+}
+.login-box button:hover { transform: translateY(-1px); }
+.login-note { font-size: 12px; color: #7a80c0; margin-top: 18px; line-height: 1.5; }
+#login-btn { display: none; }
+</style>
+</head>
+<body class="login-page">
+    <button id="login-btn"></button>
+
+    <div class="login-box">
+        <div class="login-logo">No<span>Name</span></div>
+        <h1>Войди, чтобы общаться</h1>
+        <button id="loginBtn">Войти</button>
+        <button id="signupBtn" class="ghost">Создать аккаунт</button>
+        <p class="login-note">Вход защищён 2-факторной аутентификацией.<br>После входа можно привязать почту — на неё будет приходить код.</p>
+    </div>
+
+    <script>
+    (function () {
+        function loggedIn() {
+            try {
+                var u = JSON.parse(localStorage.getItem('steam_user') || 'null');
+                return !!(u && (u.name || u.id));
+            } catch (_) { return false; }
+        }
+        function openAuth() {
+            var b = document.getElementById('login-btn');
+            if (b) b.click();
+        }
+        function boot() {
+            if (loggedIn()) { location.replace('chat_mobile.html'); return; }
+            document.getElementById('loginBtn').onclick = openAuth;
+            document.getElementById('signupBtn').onclick = openAuth;
+            // после входа переходим в чат
+            setInterval(function () {
+                if (loggedIn()) location.replace('chat_mobile.html');
+            }, 1200);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+        else boot();
+    })();
+    </script>
+</body>
+</html>
