@@ -2200,3 +2200,9 @@ button:focus, a:focus, input:focus { outline: none; }
 body.light-theme .nn-donate-card { background: #fff; color: #14162e; }
 body.light-theme .nn-donate-card p { color: #5c626b; }
 @media (max-width: 640px) { .nn-donate { bottom: 18px; left: 18px; width: 52px; height: 52px; } }
+
+
+/* ===== убираем скроллбары ВЕЗДЕ ===== */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
+html, body { scrollbar-width: none; }
