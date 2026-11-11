@@ -48,7 +48,7 @@
         ov.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
         ov.innerHTML = '<div class="nn-donate-card">'
             + '<h3>Поддержи NoName 💜</h3>'
-            + '<p>Помоги собрать на собственный домен — чтобы сайт открывался без VPN и DPI-обходов на любом устройстве.</p>'
+            + '<p>Средства идут на обслуживание серверов и оплату домена — а если просто хочешь сказать спасибо, тоже приятно 💜</p>'
             + '<a class="donate-btn" href="https://www.donationalerts.com/r/nonameprojects" target="_blank" rel="noopener">Поддержать на DonationAlerts</a>'
             + '<button class="close" id="nn-donate-close">Закрыть</button>'
             + '</div>';
