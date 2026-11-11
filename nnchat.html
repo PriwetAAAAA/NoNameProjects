@@ -146,6 +146,34 @@ body.light-theme .people-head { color: #6a7090 !important; }
 body.light-theme .people-actions button { color: #3d4360 !important; border-color: rgba(70,90,200,.3) !important; }
 body.light-theme .profile-name { color: #14162e !important; }
 body.light-theme .profile-status { color: #6a7090 !important; }
+/* ===== PREMIUM: кнопки, разделение, профиль, группы ===== */
+.chat-input-bar button, .nl-card button.primary {
+    background: linear-gradient(135deg, #5b8cff, #b46bff);
+    box-shadow: 0 4px 18px rgba(124,58,237,.35), inset 0 1px 0 rgba(255,255,255,.22);
+    transition: transform .15s, box-shadow .2s;
+}
+.chat-input-bar button:hover, .nl-card button.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px rgba(124,58,237,.52), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.chat-input-bar {
+    margin: 0 12px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    background: rgba(255,255,255,.03);
+}
+.people-actions { border-top: 1px solid var(--border-color); padding: 10px 8px; }
+.people-actions button {
+    background: linear-gradient(135deg, rgba(91,140,255,.14), rgba(180,107,255,.14));
+    border: 1px solid var(--border-color);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.people-actions button:hover { border-color: var(--accent-end); background: rgba(168,85,247,.18); }
+.person-main { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; background: transparent; border: none; color: inherit; cursor: pointer; padding: 0; font: inherit; text-align: left; }
+.person-prof { flex-shrink: 0; background: transparent; border: none; color: #7a80c0; cursor: pointer; font-size: 15px; opacity: .55; padding: 2px 4px; transition: opacity .15s, color .15s, transform .15s; }
+.person-prof:hover { opacity: 1; color: #a6adf0; transform: scale(1.15); }
+.nl-card button.warn { width: 100%; min-height: 44px; border-radius: 11px; border: 1px solid rgba(255,150,0,.45); background: rgba(255,150,0,.12); color: #ffb347; cursor: pointer; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.nl-card button.leave { width: 100%; min-height: 44px; border-radius: 11px; border: 1px solid rgba(239,68,68,.45); background: rgba(239,68,68,.12); color: #ff8a8a; cursor: pointer; font-size: 14px; font-weight: 600; }
 </style>
 </head>
 <body class="nnchat-page">
@@ -227,6 +255,10 @@ body.light-theme .profile-status { color: #6a7090 !important; }
             <p>Управление чатами и группами.</p>
             <div id="settingsChatBlock" style="display:none;margin-bottom:14px">
                 <button class="danger" id="deleteChatBtn">Удалить этот чат (у обоих)</button>
+            </div>
+            <div id="settingsGroupBlock" style="display:none;margin-bottom:14px">
+                <button class="warn" id="deleteGroupBtn">Удалить группу</button>
+                <button class="leave" id="leaveGroupBtn">Покинуть группу</button>
             </div>
             <div style="margin-bottom:10px">
                 <input id="groupName" type="text" placeholder="Название новой группы" autocomplete="off">
@@ -329,22 +361,34 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         peopleList.innerHTML = '';
 
         friends.forEach(function (f) {
-            var b = document.createElement('button');
-            b.className = 'person' + (current && current.type === 'dm' && current.key === convKey(f.id) ? ' active' : '');
-            b.innerHTML = '<span class="av">' + initial(f.name) + '<span class="on"></span></span><span class="nm"></span>';
-            b.querySelector('.nm').textContent = f.name || f.id;
-            if (onlineIds[f.id]) b.querySelector('.on').classList.add('live');
-            b.onclick = function () { openDm(f); };
-            peopleList.appendChild(b);
+            var row = document.createElement('div');
+            row.className = 'person' + (current && current.type === 'dm' && current.key === convKey(f.id) ? ' active' : '');
+            var main = document.createElement('button');
+            main.className = 'person-main';
+            main.innerHTML = '<span class="av">' + initial(f.name) + '<span class="on"></span></span><span class="nm"></span>';
+            main.querySelector('.nm').textContent = f.name || f.id;
+            if (onlineIds[f.id]) main.querySelector('.on').classList.add('live');
+            main.onclick = function () { openDm(f); };
+            var prof = document.createElement('button');
+            prof.className = 'person-prof';
+            prof.title = 'Профиль';
+            prof.textContent = '👤';
+            prof.onclick = function (e) { e.stopPropagation(); openProfile(f.id, f.name); };
+            row.appendChild(main);
+            row.appendChild(prof);
+            peopleList.appendChild(row);
         });
 
         groups.forEach(function (g) {
-            var b = document.createElement('button');
-            b.className = 'person' + (current && current.type === 'group' && current.key === ('group:' + g.id) ? ' active' : '');
-            b.innerHTML = '<span class="av grp">👥</span><span class="nm"></span><span class="badge">группа</span>';
-            b.querySelector('.nm').textContent = g.name || 'Группа';
-            b.onclick = function () { openGroup(g); };
-            peopleList.appendChild(b);
+            var row = document.createElement('div');
+            row.className = 'person' + (current && current.type === 'group' && current.key === ('group:' + g.id) ? ' active' : '');
+            var main = document.createElement('button');
+            main.className = 'person-main';
+            main.innerHTML = '<span class="av grp">👥</span><span class="nm"></span><span class="badge">группа</span>';
+            main.querySelector('.nm').textContent = g.name || 'Группа';
+            main.onclick = function () { openGroup(g); };
+            row.appendChild(main);
+            peopleList.appendChild(row);
         });
 
         pending.forEach(function (p) {
@@ -456,13 +500,14 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         clearMsgs();
         document.body.classList.remove('people-open');
         showSettingsChatBlock(true);
+        showSettingsGroupBlock(false, false);
         renderPeople();
         subscribeConv(current.key);
         loadMessages(current.key);
     }
 
     function openGroup(g) {
-        current = { type: 'group', key: 'group:' + g.id, title: g.name || 'Группа', groupId: g.id };
+        current = { type: 'group', key: 'group:' + g.id, title: g.name || 'Группа', groupId: g.id, isOwner: g.owner_id === myId };
         window.__nnChatCurrentConv = current.key;
         chatTitle.textContent = current.title;
         setConn(true, 'Группа');
@@ -470,6 +515,7 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         clearMsgs();
         document.body.classList.remove('people-open');
         showSettingsChatBlock(false);
+        showSettingsGroupBlock(true, current.isOwner);
         renderPeople();
         subscribeConv(current.key);
         loadMessages(current.key);
@@ -502,6 +548,11 @@ body.light-theme .profile-status { color: #6a7090 !important; }
 
     // ---------- НАСТРОЙКИ ----------
     function showSettingsChatBlock(show) { $('settingsChatBlock').style.display = show ? 'block' : 'none'; }
+    function showSettingsGroupBlock(show, isOwner) {
+        $('settingsGroupBlock').style.display = show ? 'block' : 'none';
+        $('deleteGroupBtn').style.display = isOwner ? 'block' : 'none';
+        $('leaveGroupBtn').style.display = isOwner ? 'none' : 'block';
+    }
 
     function deleteChat() {
         if (!current || current.type !== 'dm') return;
@@ -515,6 +566,34 @@ body.light-theme .profile-status { color: #6a7090 !important; }
                 input.disabled = true; sendBtn.disabled = true;
                 loadFriends();
             }).catch(function (e) { alert('Ошибка удаления: ' + (e.message || e)); });
+    }
+
+    function deleteGroup() {
+        if (!current || current.type !== 'group') return;
+        if (!confirm('Удалить группу для ВСЕХ участников?')) return;
+        var gid = current.groupId;
+        q(function () { return sb.from('groups').delete().eq('id', gid); })
+            .then(function () { return q(function () { return sb.from('group_members').delete().eq('group_id', gid); }); })
+            .then(function () { return q(function () { return sb.from('dm_messages').delete().eq('conv', current.key); }); })
+            .then(function () {
+                closeModal('settingsModal');
+                current = null; window.__nnChatCurrentConv = null; chatTitle.textContent = 'Выбери чат'; clearMsgs();
+                input.disabled = true; sendBtn.disabled = true;
+                loadGroups();
+            }).catch(function (e) { alert('Ошибка: ' + (e.message || e)); });
+    }
+
+    function leaveGroup() {
+        if (!current || current.type !== 'group') return;
+        if (!confirm('Покинуть группу?')) return;
+        var gid = current.groupId;
+        q(function () { return sb.from('group_members').delete().eq('group_id', gid).eq('user_id', myId); })
+            .then(function () {
+                closeModal('settingsModal');
+                current = null; window.__nnChatCurrentConv = null; chatTitle.textContent = 'Выбери чат'; clearMsgs();
+                input.disabled = true; sendBtn.disabled = true;
+                loadGroups();
+            }).catch(function (e) { alert('Ошибка: ' + (e.message || e)); });
     }
 
     function renderGroupMembers() {
@@ -665,14 +744,8 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         $('peopleToggle').onclick = function () { document.body.classList.toggle('people-open'); };
         $('peopleBackdrop').onclick = function () { document.body.classList.remove('people-open'); };
 
-        // открытие профиля по двойному клику на человеке
-        peopleList.addEventListener('dblclick', function (e) {
-            var b = e.target.closest('.person');
-            if (!b) return;
-            var idx = Array.prototype.indexOf.call(peopleList.querySelectorAll('.person'), b);
-            var f = friends[idx];
-            if (f) openProfile(f.id, f.name);
-        });
+        $('deleteGroupBtn').onclick = deleteGroup;
+        $('leaveGroupBtn').onclick = leaveGroup;
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

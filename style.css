@@ -2137,3 +2137,21 @@ html body.light-theme header .header-right button#login-btn:hover {
 }
 .nn-toast.in { opacity: 1; transform: none; }
 body.light-theme .nn-toast { background: #ffffff; color: #14162e; border-color: rgba(70, 90, 200, .3); }
+
+
+/* ===== FLOATING ANDROID APP BUTTON ===== */
+.nn-app-dl {
+    position: fixed;
+    bottom: 26px; right: 26px;
+    z-index: 9000;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4d7cff, #a855f7);
+    box-shadow: 0 8px 26px rgba(124,58,237,.45), inset 0 1px 0 rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+}
+.nn-app-dl:hover { transform: translateY(-3px) scale(1.06); box-shadow: 0 14px 36px rgba(124,58,237,.6), inset 0 1px 0 rgba(255,255,255,.25); }
+.nn-app-dl svg { width: 30px; height: 30px; }
+@media (max-width: 640px) { .nn-app-dl { bottom: 18px; right: 18px; width: 52px; height: 52px; } }

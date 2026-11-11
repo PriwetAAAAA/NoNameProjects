@@ -9,6 +9,20 @@
     var myId = '';
     var toastEl = null;
 
+    function injectAppButton() {
+        if (document.getElementById('nn-app-dl')) return;
+        var a = document.createElement('a');
+        a.id = 'nn-app-dl';
+        a.className = 'nn-app-dl';
+        a.href = 'NoName.apk';
+        a.download = '';
+        a.title = 'Скачать приложение Android';
+        a.innerHTML = '<svg viewBox="0 0 24 24" fill="#ffffff"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24a11.5 11.5 0 0 0-8.94 0L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.18-.37.54-.22.83l1.84 3.18A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>';
+        document.body.appendChild(a);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectAppButton);
+    else injectAppButton();
+
     function readMe() {
         try {
             var raw = localStorage.getItem('steam_user');
