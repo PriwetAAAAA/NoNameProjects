@@ -23,6 +23,35 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectAppButton);
     else injectAppButton();
 
+    function openDonateModal() {
+        if (document.getElementById('nn-donate-modal')) return;
+        var ov = document.createElement('div');
+        ov.id = 'nn-donate-modal';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
+        ov.innerHTML = '<div class="nn-donate-card">'
+            + '<h3>Поддержи NoName 💜</h3>'
+            + '<p>Помоги собрать на собственный домен — чтобы сайт открывался без VPN и DPI-обходов на любом устройстве.</p>'
+            + '<a class="donate-btn" href="https://www.donationalerts.com/r/nonameprojects" target="_blank" rel="noopener">Поддержать на DonationAlerts</a>'
+            + '<button class="close" id="nn-donate-close">Закрыть</button>'
+            + '</div>';
+        document.body.appendChild(ov);
+        document.getElementById('nn-donate-close').onclick = function () { ov.remove(); };
+        ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+    }
+
+    function injectDonateButton() {
+        if (document.getElementById('nn-donate')) return;
+        var b = document.createElement('button');
+        b.id = 'nn-donate';
+        b.className = 'nn-donate';
+        b.title = 'Помочь проекту';
+        b.innerHTML = '<svg viewBox="0 0 24 24" fill="#ffffff"><path d="M12 21s-6.7-4.3-9.3-8C1.2 10.5 2 7 4.9 5.7c2-.9 4.2-.2 5.6 1.2L12 8l1.5-1.1c1.4-1.4 3.6-2.1 5.6-1.2C22 7 22.8 10.5 21.3 13c-2.6 3.7-9.3 8-9.3 8z"/></svg>';
+        b.onclick = openDonateModal;
+        document.body.appendChild(b);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectDonateButton);
+    else injectDonateButton();
+
     function readMe() {
         try {
             var raw = localStorage.getItem('steam_user');

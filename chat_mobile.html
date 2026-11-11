@@ -112,7 +112,6 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
     <div class="mc-top">
         <button class="mc-menu" id="mcMenu">☰</button>
         <div class="mc-title"><h2 id="chatTitle">Чат</h2><div class="sub" id="connText">Подключение...</div></div>
-        <button class="mc-mail" id="mailBtn">✉</button>
     </div>
 
     <div class="mc-body">
@@ -486,7 +485,6 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
         $('mcBackdrop').onclick = function () { document.body.classList.remove('menu-open'); };
         $('logoutBtn').onclick = function () { localStorage.removeItem('steam_user'); location.replace('chat_mobile_login.html'); };
         $('linkMailBtn').onclick = function () { document.body.classList.remove('menu-open'); openModal('mailModal'); };
-        $('mailBtn').onclick = function () { openModal('mailModal'); };
         $('mailCancel').onclick = function () { closeModal('mailModal'); };
         $('mailSendCode').onclick = sendMailCode;
         $('mailConfirm').onclick = confirmMail;
