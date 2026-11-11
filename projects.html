@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="mascot.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoName Projects — Проекты</title>
+    <!-- Подключение Supabase JS (актуальная стабильная версия) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <!-- Подключение внешних стилей и скриптов -->
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script><script src="anim.js" defer></script>
+</head>
+<body>
+    <!-- ШАПКА В СТИЛЕ PWGOODSTORE -->
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="mascot.png" alt="NoName" class="site-logo-img">
+                <span class="logo-text">NoName Projects</span>
+            </a>
+        </div>
+        <div class="header-center">
+            <a href="projects.html" class="nav-link">Проекты</a>
+        </div>
+<div class="header-right">
+    <button id="theme-toggle">Тема</button>
+    <button id="login-btn" class="nav-link-btn">Войти</button>
+    <div id="profile-btn" class="nav-link-btn" style="display: none; cursor: pointer; align-items: center;"></div>
+</div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main>
+        <!-- БЛОК ПРОЕКТОВ -->
+        <section id="projects-section">
+            <h2>Наши разработки</h2>
+            <div class="projects-grid">
+                <!-- NoName Drop — файлы и зеркало телефона по USB -->
+                <div class="project-card">
+                    <img src="drop.png" alt="NoName Drop" class="project-card-img">
+                    <h3>NoName Drop</h3>
+                    <p>Передача файлов и зеркало экрана телефона на ПК по USB-кабелю.</p>
+                    <a href="drop.html" class="project-btn">Открыть проект</a>
+                </div>
+
+                <!-- Карточка проекта: Skaduyk Metrostroi (исправленная: y вместо i) -->
+                <div class="project-card">
+                    <img src="skaduyk.png" alt="Skaduyk" class="project-card-img-sk">
+                    <h3>Skaduyk Metrostroy</h3>
+                    <p>Приватный сервер игры Гаррис мод с аддоном метросторой. Сервер создан для игры без правил что влечёт за собой развитие аутизма.</p>
+                    <a href="skaduyk.html" class="project-btn">Открыть проект</a>
+                </div>
+
+                                <!-- Новая карточка 2: -->
+                <div class="project-card">
+                    <img src="mods.png" alt="моды" class="project-card-img-md">
+                    <h3>Моды на игры</h3>
+                    <p>Наши моды для тех или иных игр.</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <a href="mods.html" class="project-btn">Посмотреть список</a>
+                </div>
+
+                <!-- Карточка прог -->
+                <div class="project-card">
+                    <img src="programs.png" alt="NN programs" class="project-card-img">
+                    <h3>Программы</h3>
+                    <p>Тут всякие проги</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <a href="programs.html" class="project-btn">Открыть проект</a>
+                </div>
+
+                <!-- LaTeX -->
+                <div class="project-card">
+                    <img src="lanntex.png" alt="latex" class="project-card-img-ml">
+                    <h3>LaTeX</h3>
+                    <p>"страничка, сделанная ради пяти пятерок по алгебре.</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <a href="latex.html" class="project-btn">Открыть проект</a>
+                </div>
+                
+                <!-- Новая карточка 1: Скоро -->
+                <div class="project-card">
+                    <img src="message.png" alt="nnmessenger" class="project-card-img-ms">
+                    <h3>NoName Chatter</h3>
+                    <p>мессенджер от NoName?</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <a href="nnchat.html" class="project-btn">Открыть проект</a>
+                </div>
+
+                <!-- Новая карточка 1: Скоро -->
+                <div class="project-card">
+                    <img src="mlxa.png" alt="малыха" class="project-card-img-ml">
+                    <h3>что?!</h3>
+                    <p>что?!</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <a href="#" class="project-btn disabled" onclick="return false;" style="opacity:0.6; pointer-events:none; cursor:default;">Скоро</a>
+                </div>
+
+                <!-- Карточка проекта: NoName Launcher (NNL) -->
+                <div class="project-card">
+                    <img src="mascotl.png" alt="NNL Mascot" class="project-card-img">
+                    <h3>NoName Launcher (NNL)</h3>
+                    <p>Разработка прекращена.</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <a href="nnl.html" class="project-btn">Открыть проект</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ЛИЧНЫЙ КАБИНЕТ (скрыт по умолчанию, показывается после авторизации) -->
+        <section id="profile" style="display: none;">
+            <div class="profile-header">
+                <!-- Круглая аватарка -->
+                <img id="avatar" src="" alt="Аватар пользователя" class="avatar">
+                <div class="profile-info">
+                    <h2 id="username">Пользователь</h2>
+                    <p id="status">Статус: Не установлен</p>
+                </div>
+            </div>
+            <div class="friends-section">
+                <h3>Друзья</h3>
+                <ul id="friends-list">
+                    <!-- Список будет заполняться динамически из таблицы profiles -->
+                </ul>
+            </div>
+            <button id="logout-btn" class="btn-secondary">Выйти</button>
+        </section>
+    </main>
+</html>

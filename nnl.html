@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="mascot.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoName Launcher (NNL) — NoName Projects</title>
+    <!-- Подключение Supabase JS (актуальная стабильная версия) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <!-- Подключение внешних стилей и скриптов -->
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script><script src="anim.js" defer></script>
+<style>
+    /* Унылая серая тема для страницы лаунчера (nnl.html) */
+    body {
+        background: #1a1b22 !important;
+        color: #888888 !important;
+        transition: none !important;
+    }
+
+    /* Убираем неоновые сферы */
+    body::before,
+    body::after {
+        display: none !important;
+    }
+
+    /* Шапка — серая и плоская */
+    header {
+        background: #22252a !important;
+        border: 1px solid #33363e !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+
+    header .logo-text,
+    header .logo-link,
+    header .logo-link span,
+    header h1 {
+        color: #888888 !important;
+        text-shadow: none !important;
+    }
+
+    /* Ссылка "Проекты" */
+    header .nav-link {
+        color: #777777 !important;
+        text-shadow: none !important;
+    }
+    header .nav-link:hover {
+        color: #999999 !important;
+        text-shadow: none !important;
+    }
+
+    /* Кнопка переключения темы */
+    #theme-toggle {
+        color: #888888 !important;
+        background: transparent !important;
+        filter: grayscale(1) !important;
+        opacity: 0.6 !important;
+    }
+    #theme-toggle:hover {
+        background: rgba(255,255,255,0.05) !important;
+    }
+
+    /* Кнопка "Войти" */
+    #login-btn {
+        background: #33363e !important;
+        color: #888888 !important;
+        box-shadow: none !important;
+        border: 1px solid #44474f !important;
+        text-shadow: none !important;
+    }
+    #login-btn:hover {
+        background: #3a3d45 !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    /* Заголовок NoName Launcher */
+    #nnl-landing h1 {
+        color: #888888 !important;
+        background: none !important;
+        -webkit-text-fill-color: #888888 !important;
+        text-shadow: none !important;
+    }
+
+    #nnl-landing p {
+        color: #777777 !important;
+        text-shadow: none !important;
+    }
+
+    /* Кнопка "СКАЧАТЬ ЛАУНЧЕР" */
+    #nnl-landing .btn-primary {
+        background: #33363e !important;
+        color: #888888 !important;
+        box-shadow: none !important;
+        border: 1px solid #44474f !important;
+        text-shadow: none !important;
+    }
+    #nnl-landing .btn-primary:hover {
+        background: #3a3d45 !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    /* Все остальные элементы, которые могут появиться (например, модалка) — тоже серые */
+    .modal-content,
+    .modal-content * {
+        background: #22252a !important;
+        color: #888888 !important;
+        border-color: #33363e !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
+    }
+    .modal-content h2,
+    .modal-content p {
+        color: #888888 !important;
+    }
+    .modal-content input,
+    .modal-content button {
+        background: #33363e !important;
+        color: #888888 !important;
+        border-color: #44474f !important;
+    }
+    .modal-content button:hover {
+        background: #3a3d45 !important;
+        transform: none !important;
+    }
+    .close-btn {
+        color: #777777 !important;
+    }
+    .close-btn:hover {
+        color: #aaaaaa !important;
+    }
+</style>
+</head>
+<body>
+    <!-- ШАПКА В СТИЛЕ PWGOODSTORE -->
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="mascot.png" alt="NoName" class="site-logo-img">
+                <span class="logo-text">NoName Projects</span>
+            </a>
+        </div>
+        <div class="header-center">
+            <a href="projects.html" class="nav-link">Проекты</a>
+        </div>
+<div class="header-right">
+    <button id="theme-toggle">Тема</button>
+    <button id="login-btn" class="nav-link-btn">Войти</button>
+    <div id="profile-btn" class="nav-link-btn" style="display: none; cursor: pointer; align-items: center;"></div>
+</div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main>
+        <!-- БЛОК ОПИСАНИЯ ЛАУНЧЕРА -->
+        <section id="nnl-landing" style="text-align: center; max-width: 700px; padding: 3rem 1rem;">
+            <h1 style="font-size: 3rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--text-primary), var(--text-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">NoName Launcher</h1>
+            <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2.5rem;">
+                Разработка прекращена.
+            </p>
+        </section>
+
+        <!-- ЛИЧНЫЙ КАБИНЕТ (скрыт по умолчанию, показывается после авторизации) -->
+        <section id="profile" style="display: none;">
+            <div class="profile-header">
+                <!-- Круглая аватарка -->
+                <img id="avatar" src="" alt="Аватар пользователя" class="avatar">
+                <div class="profile-info">
+                    <h2 id="username">Пользователь</h2>
+                    <p id="status">Статус: Не установлен</p>
+                </div>
+            </div>
+            <div class="friends-section">
+                <h3>Друзья</h3>
+                <ul id="friends-list">
+                    <!-- Список будет заполняться динамически из таблицы profiles -->
+                </ul>
+            </div>
+            <button id="logout-btn" class="btn-secondary">Выйти</button>
+        </section>
+    </main>
+</html>

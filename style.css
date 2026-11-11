@@ -1,0 +1,2118 @@
+/* ============================================================
+   NONAME PROJECTS — NEON DARK / GLASSMORPHISM
+   Полная перезапись стилей
+   ============================================================ */
+
+/* ----- ОБЩИЕ СБРОСЫ ----- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #070610; /* fallback */
+    color: #ffffff;
+    line-height: 1.5;
+    transition: background-color 0.4s ease, color 0.4s ease;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ----- НЕОНОВЫЙ ФОН: светящиеся пятна (псевдоэлементы) ----- */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+    transition: background 0.4s;
+}
+
+body::before {
+    width: 600px;
+    height: 600px;
+    top: -200px;
+    left: -200px;
+    background: radial-gradient(circle, #0072ff, transparent 70%);
+}
+
+body::after {
+    width: 700px;
+    height: 700px;
+    bottom: -250px;
+    right: -250px;
+    background: radial-gradient(circle, #7000ff, transparent 70%);
+}
+
+/* Светлая тема — более нежные пятна */
+body.light-theme::before {
+    background: radial-gradient(circle, #b8a7ff, transparent 70%);
+    opacity: 0.2;
+}
+body.light-theme::after {
+    background: radial-gradient(circle, #7f9eff, transparent 70%);
+    opacity: 0.2;
+}
+
+/* ----- CSS-ПЕРЕМЕННЫЕ (ТЁМНАЯ ПО УМОЛЧАНИЮ) ----- */
+:root {
+    /* Фоны */
+    --bg-main: #070610;
+    --bg-surface: rgba(255, 255, 255, 0.02);
+    --bg-card: rgba(255, 255, 255, 0.02);
+    --bg-input: rgba(255, 255, 255, 0.05);
+    --bg-overlay: rgba(0, 0, 0, 0.7);
+    --bg-modal: rgba(10, 8, 20, 0.7);
+
+    /* Текст */
+    --text-primary: #ffffff;
+    --text-secondary: #a2a1b6;
+    --text-muted: #6b6a7a;
+
+    /* Границы и стекло */
+    --border-color: rgba(255, 255, 255, 0.06);
+    --border-light: rgba(255, 255, 255, 0.03);
+    --glass-blur: blur(16px);
+
+    /* Акцент */
+    --accent-start: #0072ff;
+    --accent-end: #7000ff;
+    --accent-glow: rgba(112, 0, 255, 0.25);
+
+    /* Кнопки */
+    --btn-primary-bg: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: linear-gradient(135deg, #1a7aff, #8a2aff);
+    --btn-secondary-bg: rgba(255, 255, 255, 0.03);
+    --btn-secondary-text: #ffffff;
+    --btn-secondary-border: rgba(255, 255, 255, 0.1);
+
+    /* Аватар */
+    --avatar-border: rgba(255, 255, 255, 0.12);
+
+    /* Тени */
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ----- СВЕТЛАЯ ТЕМА ----- */
+body.light-theme {
+    --bg-main: #f5f4fa;
+    --bg-surface: rgba(255, 255, 255, 0.6);
+    --bg-card: rgba(255, 255, 255, 0.5);
+    --bg-input: rgba(0, 0, 0, 0.04);
+    --bg-overlay: rgba(0, 0, 0, 0.25);
+    --bg-modal: rgba(255, 255, 255, 0.7);
+
+    --text-primary: #12111a;
+    --text-secondary: #2d2b3a;
+    --text-muted: #5a586a;
+
+    --border-color: rgba(0, 0, 0, 0.06);
+    --border-light: rgba(0, 0, 0, 0.03);
+
+    --accent-start: #4a6cf7;
+    --accent-end: #7b4aff;
+    --accent-glow: rgba(74, 108, 247, 0.2);
+
+    --btn-primary-bg: linear-gradient(135deg, #4a6cf7, #7b4aff);
+    --btn-primary-hover: linear-gradient(135deg, #5a7cf7, #8b5aff);
+    --btn-secondary-bg: rgba(0, 0, 0, 0.03);
+    --btn-secondary-text: #1c1e21;
+    --btn-secondary-border: rgba(0, 0, 0, 0.08);
+
+    --avatar-border: rgba(0, 0, 0, 0.08);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ----- ГЛОБАЛЬНЫЕ ПРИМЕНЕНИЯ ----- */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   ШАПКА (Glassmorphism)
+   ============================================================ */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 2rem;
+    background: var(--bg-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.4s, border-color 0.4s, backdrop-filter 0.4s;
+    position: relative;
+    z-index: 10;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none !important;
+}
+
+.site-logo-img {
+    height: 40px;
+    width: auto;
+    border-radius: 0;
+    background: transparent;
+}
+
+.logo-link h1 {
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin: 0;
+    padding: 0;
+    color: var(--text-primary);
+    transition: color 0.3s;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    transition: background 0.2s, transform 0.1s;
+    color: var(--text-primary);
+    backdrop-filter: blur(4px);
+}
+
+#theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+#login-btn {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.15s, box-shadow 0.3s;
+    box-shadow: 0 0 15px rgba(0, 114, 255, 0.2);
+}
+
+#login-btn:hover {
+    background: var(--btn-primary-hover);
+    transform: scale(1.03);
+    box-shadow: 0 0 25px rgba(112, 0, 255, 0.3);
+}
+
+/* ============================================================
+   ОСНОВНОЙ КОНТЕНТ
+   ============================================================ */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem 1.5rem;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================================
+   LANDING (витрина)
+   ============================================================ */
+#landing {
+    text-align: center;
+    max-width: 700px;
+    padding: 3rem 1rem 1rem;
+}
+
+#landing h1 {
+    font-size: 3.2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+#landing p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.5rem;
+    transition: color 0.3s;
+}
+
+.btn-primary {
+    display: inline-block;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    padding: 0.9rem 2.8rem;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.15s, box-shadow 0.3s;
+    box-shadow: 0 0 20px rgba(0, 114, 255, 0.25);
+}
+
+.btn-primary:hover {
+    background: var(--btn-primary-hover);
+    transform: scale(1.03);
+    box-shadow: 0 0 35px rgba(112, 0, 255, 0.35);
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+}
+
+#download-btn {
+    font-size: 1.4rem;
+    padding: 1rem 3.5rem;
+}
+
+/* ============================================================
+   РАЗДЕЛ ПРОЕКТОВ (Glassmorphism карточки)
+   ============================================================ */
+#projects-section {
+    padding: 80px 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#projects-section h2 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    transition: color 0.3s;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.project-card {
+    background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s, border-color 0.3s;
+    box-shadow: var(--card-shadow);
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px var(--accent-glow);
+    border-color: rgba(112, 0, 255, 0.15);
+}
+
+.project-card-img,
+.project-icon {
+    max-height: 80px;
+    width: auto;
+    object-fit: contain;
+    margin: 0 auto 15px auto;
+    display: block;
+    font-size: 3.5rem;
+    line-height: 1;
+}
+
+.project-card h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    transition: color 0.3s;
+}
+
+.project-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0.5rem 0 1.2rem;
+    transition: color 0.3s;
+}
+
+.project-btn {
+    display: inline-block;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    padding: 0.6rem 1.8rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.3s, transform 0.15s, box-shadow 0.3s;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    box-shadow: 0 0 12px rgba(0, 114, 255, 0.15);
+}
+
+.project-btn:hover {
+    background: var(--btn-primary-hover);
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(112, 0, 255, 0.25);
+}
+
+.project-btn:active {
+    transform: scale(0.97);
+}
+
+/* ============================================================
+   ЛИЧНЫЙ КАБИНЕТ
+   ============================================================ */
+#profile {
+    background: var(--bg-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 100%;
+    border: 1px solid var(--border-color);
+    transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s;
+    margin: 1rem auto;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--avatar-border);
+    background: var(--bg-input);
+    transition: border-color 0.3s;
+}
+
+.profile-info h2 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    transition: color 0.3s;
+    margin-bottom: 0.25rem;
+}
+
+.profile-info p {
+    color: var(--text-secondary);
+    transition: color 0.3s;
+}
+
+.friends-section {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.friends-section h3 {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    transition: color 0.3s;
+}
+
+#friends-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+#friends-list li {
+    color: var(--text-secondary);
+    padding: 0.4rem 0.6rem;
+    background: var(--bg-input);
+    border-radius: 6px;
+    transition: background 0.3s, color 0.3s;
+}
+
+.btn-secondary {
+    background: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    border: 1px solid var(--btn-secondary-border);
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
+    margin-top: 1.5rem;
+    backdrop-filter: blur(4px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--text-secondary);
+    transform: scale(1.02);
+}
+
+/* ============================================================
+   МОДАЛЬНОЕ ОКНО И ОВЕРЛЕЙ (Glassmorphism)
+   ============================================================ */
+#modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-overlay);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 999;
+    transition: background 0.3s;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    pointer-events: none;
+}
+
+.modal-content {
+    background: var(--bg-modal);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: var(--shadow);
+    pointer-events: auto;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.close-btn {
+    position: absolute;
+    top: 0.8rem;
+    right: 1.2rem;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s, transform 0.2s;
+    background: none;
+    border: none;
+}
+
+.close-btn:hover {
+    color: var(--text-primary);
+    transform: rotate(90deg);
+}
+
+.modal-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    transition: color 0.3s;
+}
+
+.modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 1.8rem;
+    transition: color 0.3s;
+}
+
+#login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+#email-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-primary);
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+    backdrop-filter: blur(4px);
+}
+
+#email-input:focus {
+    outline: none;
+    border-color: var(--accent-start);
+    box-shadow: 0 0 15px rgba(0, 114, 255, 0.15);
+}
+
+#send-magic-link {
+    width: 100%;
+    justify-content: center;
+}
+
+#login-message {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    text-align: center;
+    transition: color 0.3s;
+}
+
+/* Разделитель и кнопка Google */
+.login-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 16px 0 12px 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    gap: 12px;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.login-divider span {
+    padding: 0 8px;
+    background: var(--bg-modal);
+    color: var(--text-secondary);
+    transition: background 0.3s, color 0.3s;
+}
+
+.btn-google {
+    width: 100%;
+    background: linear-gradient(135deg, #6a1b9a, #8e24aa);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s, box-shadow 0.3s;
+    box-shadow: 0 0 20px rgba(112, 0, 255, 0.2);
+}
+
+.btn-google:hover {
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    box-shadow: 0 0 30px rgba(112, 0, 255, 0.3);
+}
+
+.btn-google:active {
+    transform: scale(0.97);
+}
+
+/* ============================================================
+   ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ
+   ============================================================ */
+.hidden {
+    display: none !important;
+}
+
+/* ============================================================
+   АДАПТИВНОСТЬ
+   ============================================================ */
+@media (max-width: 640px) {
+    header {
+        padding: 0.8rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .logo-link h1 {
+        font-size: 1.1rem;
+    }
+    .site-logo-img {
+        height: 32px;
+    }
+    #landing h1 {
+        font-size: 2.2rem;
+    }
+    #landing p {
+        font-size: 1rem;
+    }
+    #download-btn {
+        font-size: 1.1rem;
+        padding: 0.8rem 2rem;
+    }
+    #projects-section {
+        padding: 60px 1rem;
+    }
+    #projects-section h2 {
+        font-size: 1.8rem;
+    }
+    .project-card {
+        padding: 1.5rem 1rem;
+    }
+    .project-card-img,
+    .project-icon {
+        max-height: 60px;
+        font-size: 2.8rem;
+    }
+    .project-card h3 {
+        font-size: 1.2rem;
+    }
+    #profile {
+        padding: 1.2rem;
+    }
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.8rem;
+    }
+    .avatar {
+        width: 64px;
+        height: 64px;
+    }
+    .profile-info h2 {
+        font-size: 1.5rem;
+    }
+    .modal-content {
+        padding: 1.8rem 1.2rem;
+        max-width: 90%;
+    }
+    .modal-content h2 {
+        font-size: 1.5rem;
+    }
+    .btn-primary {
+        padding: 0.7rem 1.8rem;
+        font-size: 1rem;
+    }
+    body::before {
+        width: 300px;
+        height: 300px;
+        top: -100px;
+        left: -100px;
+    }
+    body::after {
+        width: 350px;
+        height: 350px;
+        bottom: -120px;
+        right: -120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+/* Ультимативный фикс: выравниваем и уменьшаем ВСЕ логотипы в карточках */
+.project-card img, .project-card-img, .project-card-img-sk {
+    max-height: 80px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    margin: 0 auto 15px auto !important;
+    display: block !important;
+}
+/* ===== АНИМАЦИЯ ПЛАВНОГО ПЕРЕХОДА МЕЖДУ СТРАНИЦАМИ ===== */
+body {
+    opacity: 0;
+    transition: opacity 0.35s ease-in-out;
+}
+
+body.page-loaded {
+    opacity: 1;
+}
+
+body.page-fade-out {
+    opacity: 0;
+}
+/* ===== ПАРЯЩИЙ ОСТРОВОК ШАПКИ ===== */
+header {
+    width: 90%;
+    max-width: 1100px;
+    margin: 20px auto 0 auto;
+    padding: 10px 24px;
+    border-radius: 100px;
+    background: rgba(10, 10, 20, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Для светлой темы делаем фон светлее, но сохраняем контрастность */
+body.light-theme header {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Логотип и текст */
+.logo-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none !important;
+}
+
+.site-logo-img {
+    height: 35px;
+    width: auto;
+    border-radius: 0;
+    background: transparent;
+}
+
+.logo-text {
+    color: #ffffff !important;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    transition: color 0.3s;
+}
+
+/* Ссылка "Проекты" */
+.nav-link {
+    color: rgba(255, 255, 255, 0.7) !important;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s, text-shadow 0.2s;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.nav-link:hover {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(0, 114, 255, 0.6);
+}
+
+/* Для светлой темы ссылка должна быть тёмной */
+body.light-theme .nav-link {
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+body.light-theme .nav-link:hover {
+    color: #000000 !important;
+    text-shadow: 0 0 10px rgba(74, 108, 247, 0.4);
+}
+
+/* Левая, центральная и правая части */
+.header-left,
+.header-center,
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-center {
+    flex: 1;
+    justify-content: center;
+}
+
+.header-right {
+    justify-content: flex-end;
+}
+
+/* Кнопка переключения темы */
+#theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    transition: background 0.2s, transform 0.1s;
+    color: #ffffff;
+}
+
+#theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Кнопка "Войти" — стильная капсула */
+#login-btn {
+    background: linear-gradient(135deg, #0072ff, #7000ff);
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.15s, box-shadow 0.3s;
+    box-shadow: 0 0 15px rgba(0, 114, 255, 0.2);
+}
+
+#login-btn:hover {
+    background: linear-gradient(135deg, #1a7aff, #8a2aff);
+    transform: scale(1.03);
+    box-shadow: 0 0 25px rgba(112, 0, 255, 0.3);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
+    header {
+        width: 95%;
+        padding: 8px 16px;
+        border-radius: 50px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .header-left,
+    .header-center,
+    .header-right {
+        gap: 8px;
+    }
+    .header-center {
+        order: 3;
+        flex: 1 1 100%;
+        justify-content: center;
+        margin-top: 4px;
+    }
+    .logo-text {
+        font-size: 14px;
+    }
+    .site-logo-img {
+        height: 28px;
+    }
+    .nav-link {
+        font-size: 13px;
+    }
+}
+/* ===== ЖИВОЙ НЕОНОВЫЙ ФОН: ДВИЖУЩИЕСЯ СФЕРЫ ===== */
+
+/* Переопределяем статичные сферы на анимированные */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(130px);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+    width: 400px;
+    height: 400px;
+    will-change: transform;
+}
+
+/* Синяя сфера (левая верхняя) */
+body::before {
+    background: radial-gradient(circle, #0072ff, transparent 70%);
+    top: -100px;
+    left: -100px;
+    animation: glow-drift-1 22s ease-in-out infinite alternate;
+}
+
+/* Фиолетовая сфера (правая нижняя) */
+body::after {
+    background: radial-gradient(circle, #7000ff, transparent 70%);
+    bottom: -120px;
+    right: -120px;
+    animation: glow-drift-2 26s ease-in-out infinite alternate;
+}
+
+/* Светлая тема — более нежные оттенки */
+body.light-theme::before {
+    background: radial-gradient(circle, #b8a7ff, transparent 70%);
+    opacity: 0.2;
+}
+
+body.light-theme::after {
+    background: radial-gradient(circle, #7f9eff, transparent 70%);
+    opacity: 0.2;
+}
+
+/* Ключевые кадры для первой сферы (синяя) */
+@keyframes glow-drift-1 {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(60px, -30px) scale(1.1);
+    }
+    50% {
+        transform: translate(120px, 40px) scale(0.9);
+    }
+    75% {
+        transform: translate(30px, 90px) scale(1.15);
+    }
+    100% {
+        transform: translate(-40px, 20px) scale(1.05);
+    }
+}
+
+/* Ключевые кадры для второй сферы (фиолетовая) */
+@keyframes glow-drift-2 {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    30% {
+        transform: translate(-80px, -40px) scale(1.2);
+    }
+    60% {
+        transform: translate(-40px, 60px) scale(0.85);
+    }
+    100% {
+        transform: translate(60px, -20px) scale(1.1);
+    }
+}
+
+/* Адаптация для мобильных экранов — уменьшаем размеры сфер */
+@media (max-width: 640px) {
+    body::before,
+    body::after {
+        width: 250px;
+        height: 250px;
+        filter: blur(90px);
+        opacity: 0.25;
+    }
+    body::before {
+        top: -60px;
+        left: -60px;
+    }
+    body::after {
+        bottom: -70px;
+        right: -70px;
+    }
+}
+/* ============================================================
+   ИСПРАВЛЕНИЕ СВЕТЛОЙ ТЕМЫ (style.css)
+   Добавить в конец файла, переопределяя предыдущие стили
+   ============================================================ */
+
+/* Основной фон и текст для светлой темы */
+body.light-theme {
+    background: #f5f6f8 !important;
+    color: #161820 !important;
+}
+
+/* Все карточки и блоки с матовым стеклом — светлый фон */
+body.light-theme .project-card,
+body.light-theme .connect-box,
+body.light-theme .profile-container,
+body.light-theme .modal-content {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    color: #161820 !important;
+}
+
+/* Текст внутри карточек */
+body.light-theme .project-card h3,
+body.light-theme .connect-box h2,
+body.light-theme .profile-name {
+    color: #161820 !important;
+}
+
+body.light-theme .project-card p,
+body.light-theme .connect-box p,
+body.light-theme .profile-email,
+body.light-theme .profile-status {
+    color: #2d2b3a !important;
+}
+
+/* Шапка (header) — светлый фон и тёмный текст */
+body.light-theme header {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-theme .logo-text {
+    color: #161820 !important;
+}
+
+/* Кнопка "Войти" в шапке для светлой темы — делаем тёмной */
+body.light-theme #login-btn {
+    background: linear-gradient(135deg, #4a6cf7, #7b4aff) !important;
+    color: #ffffff !important;
+}
+
+/* Кнопка "Личный кабинет" (neon-btn) для светлой темы */
+body.light-theme .neon-btn {
+    border-color: #161820 !important;
+    color: #161820 !important;
+}
+body.light-theme .neon-btn:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Все заголовки и параграфы (общее правило) */
+body.light-theme h1,
+body.light-theme h2,
+body.light-theme h3,
+body.light-theme p {
+    color: #161820 !important;
+}
+
+/* Специфичные элементы Skaduyk (если они есть) */
+body.light-theme .skaduyk-title,
+body.light-theme .skaduyk-sub {
+    color: #161820 !important;
+    text-shadow: none !important;
+}
+
+body.light-theme .skaduyk-description {
+    color: #2d2b3a !important;
+}
+
+body.light-theme .server-label {
+    color: #161820 !important;
+}
+
+body.light-theme .server-ip {
+    color: #1a1a2e !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.light-theme .copy-btn {
+    background: linear-gradient(135deg, #cc5500, #aa4400) !important;
+    box-shadow: 0 0 12px rgba(200, 80, 0, 0.2) !important;
+}
+
+body.light-theme .copy-btn:hover {
+    background: linear-gradient(135deg, #dd6600, #bb5500) !important;
+}
+/* Фикс логотипа в шапке для светлой темы */
+body.light-theme .logo-text {
+    color: #161820 !important;
+}
+
+body.light-theme .logo-link {
+    color: #161820 !important;
+}
+
+body.light-theme .logo-link h1,
+body.light-theme .logo-link span,
+body.light-theme .logo-link .logo-text {
+    color: #161820 !important;
+}
+/* ============================================================
+   НЕОНОВЫЕ КНОПКИ В СТИЛЕ CODEPEN
+   ============================================================ */
+
+/* Базовые стили для всех кнопок авторизации */
+.auth-btn {
+    position: relative;
+    display: inline-block;
+    padding: 0.6rem 1.8rem;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 2px solid #4d4dff;
+    color: #ffffff;
+    background: transparent;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(77, 77, 255, 0.1);
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+/* Кнопка "Войти" (по умолчанию) */
+#login-btn {
+    background: rgba(77, 77, 255, 0.1);
+    border-color: #4d4dff;
+    color: #ffffff;
+}
+
+#login-btn:hover {
+    background: rgba(77, 77, 255, 0.25);
+    box-shadow: 0 0 25px rgba(77, 77, 255, 0.6), 0 0 50px rgba(77, 77, 255, 0.2);
+    transform: scale(1.04);
+    border-color: #7a7aff;
+}
+
+#login-btn:active {
+    transform: scale(0.97);
+}
+
+/* Кнопка "Профиль" */
+#profile-btn {
+    background: rgba(77, 77, 255, 0.1);
+    border-color: #4d4dff;
+    color: #ffffff !important;
+    padding: 0.6rem 1.8rem;
+}
+
+#profile-btn:hover {
+    background: rgba(77, 77, 255, 0.25);
+    box-shadow: 0 0 25px rgba(77, 77, 255, 0.6), 0 0 50px rgba(77, 77, 255, 0.2);
+    transform: scale(1.04);
+    border-color: #7a7aff;
+}
+
+#profile-btn:active {
+    transform: scale(0.97);
+}
+
+/* Для светлой темы — делаем кнопки чуть темнее, но сохраняем эффект */
+body.light-theme .auth-btn {
+    color: #161820 !important;
+    border-color: #4d4dff;
+}
+
+body.light-theme #login-btn,
+body.light-theme #profile-btn {
+    background: rgba(77, 77, 255, 0.05);
+    color: #161820 !important;
+}
+
+body.light-theme #login-btn:hover,
+body.light-theme #profile-btn:hover {
+    background: rgba(77, 77, 255, 0.15);
+    box-shadow: 0 0 25px rgba(77, 77, 255, 0.4), 0 0 50px rgba(77, 77, 255, 0.1);
+    color: #000000 !important;
+}
+/* ============================================================
+   РАДУЖНАЯ ПЕРЕЛИВАЮЩАЯСЯ КНОПКА С CODEPEN (ВХОД И ПРОФИЛЬ)
+   ============================================================ */
+
+#login-btn, #profile-btn {
+    width: auto !important; /* Авто-ширина под текст кнопки */
+    min-width: 110px;       /* Минимальная аккуратная ширина */
+    height: 40px !important; /* Удобная высота для шапки */
+    border: none !important;
+    outline: none !important;
+    color: #fff !important;
+    background: #111 !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.5px;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    vertical-align: middle;
+    margin-left: 10px;
+    padding: 0 18px !important;
+    transition: color 0.3s ease-in-out !important;
+}
+
+/* Радужный градиент на заднем плане (включается при наведении) */
+#login-btn:before, #profile-btn:before {
+    content: '';
+    background: linear-gradient(45deg, #1b58ff, #8c00ff, #00c3ff, #4c00ff, #419aff, #7700ff, #7a00ff, #0400ff, #6f00ff);
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowingButton 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 8px !important;
+}
+
+/* При наведении радуга плавно загорается */
+#login-btn:hover:before, #profile-btn:hover:before {
+    opacity: 1;
+}
+
+/* Эффект при клике мышкой */
+#login-btn:active, #profile-btn:active {
+    color: #000 !important;
+}
+
+#login-btn:active:after, #profile-btn:active:after {
+    background: transparent !important;
+}
+
+/* Темная подложка, чтобы текст оставался читаемым */
+#login-btn:after, #profile-btn:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    left: 0;
+    top: 0;
+    border-radius: 8px !important;
+}
+
+/* Анимация движения градиента */
+@keyframes glowingButton {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+/* ============================================================
+   СТИЛЬ КНОПОК КАК ССЫЛКА "ПРОЕКТЫ" С РАДУЖНЫМ ХОВЕРОМ
+   ============================================================ */
+
+.nav-link-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    font-family: inherit !important;
+    cursor: pointer;
+    text-decoration: none !important;
+    padding: 6px 12px !important;
+    margin-left: 15px;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    z-index: 0;
+    transition: color 0.3s ease-in-out !important;
+}
+
+/* Радужное свечение из CodePen (включается СТРОГО при наведении) */
+.nav-link-btn:before {
+    content: '';
+    background: linear-gradient(45deg, #1b58ff, #8c00ff, #00c3ff, #4c00ff, #419aff, #7700ff, #7a00ff, #0400ff, #6f00ff);
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowingButton 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 6px !important;
+}
+
+.nav-link-btn:hover:before {
+    opacity: 1; /* Загорается радугой только при наведении */
+}
+
+/* Небольшая темная подложка под радугу при ховере */
+.nav-link-btn:hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #0d0e12;
+    left: 0;
+    top: 0;
+    border-radius: 6px !important;
+}
+
+@keyframes glowingButton {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+/* Перекрашиваем кнопку переключения темы в общий стиль ссылок шапки */
+#theme-toggle, .theme-toggle-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    font-family: inherit !important;
+    cursor: pointer;
+    padding: 6px 12px !important;
+    margin-left: 15px;
+    vertical-align: middle;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 0;
+    transition: color 0.3s ease-in-out !important;
+}
+
+/* Добавляем ей такой же радужный перелив при наведении */
+#theme-toggle:before, .theme-toggle-btn:before {
+    content: '';
+    background: linear-gradient(45deg, #1b58ff, #8c00ff, #00c3ff, #4c00ff, #419aff, #7700ff, #7a00ff, #0400ff, #6f00ff);
+    position: absolute;
+    top: -2px; left: -2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px); height: calc(100% + 4px);
+    animation: glowingButton 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 6px !important;
+}
+
+#theme-toggle:hover:before, .theme-toggle-btn:hover:before {
+    opacity: 1;
+}
+
+#theme-toggle:hover:after, .theme-toggle-btn:hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%; height: 100%;
+    background: #0d0e12;
+    left: 0; top: 0;
+    border-radius: 6px !important;
+}
+/* ===== СПИСОК ДРУЗЕЙ В ЛИЧНОМ КАБИНЕТЕ ===== */
+#friends-list {
+    list-style: none;
+    padding: 0;
+}
+#friends-list li {
+    color: #c8c8d4;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+}
+#friends-list li .game {
+    color: #4d4dff;
+    font-size: 0.8rem;
+}
+
+/* Стили для кнопки профиля в шапке: сливается с парящей стеклянной
+   панелью (тот же радиус-пилюля и тот же тонкий бордер) */
+#profile-btn {
+    display: none; /* по умолчанию скрыта, показывается через JS */
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px 4px 4px;
+    border-radius: 100px; /* как у углов самой шапки */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(25, 25, 25, 0.4);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.2s ease-out, border-color 0.2s ease-out,
+                box-shadow 0.2s ease-out, backdrop-filter 0.2s ease-out;
+    text-decoration: none;
+}
+#profile-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-color: rgba(138, 92, 246, 0.35);
+    box-shadow: 0 0 12px rgba(138, 92, 246, 0.15);
+}
+#profile-btn img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: transparent;
+}
+#profile-btn span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Фикс цвета текста при наведении для всех навигационных кнопок */
+#theme-toggle:hover, #login-btn:hover, #profile-btn:hover, .nav-link-btn:hover {
+    color: #ffffff !important; /* Текст ВСЕГДА остается белым и видимым */
+    opacity: 1 !important;     /* Убираем любую прозрачность */
+    transition: all 0.3s ease-in-out;
+}
+/* ===== УПРАВЛЕНИЕ ТЕМОЙ (КОД ИСПРАВЛЕН, JS УДАЛЕН) ===== */
+
+/* Светлая тема: кнопки входа и профиля */
+body.light-theme #login-btn,
+body.light-theme #profile-btn {
+    background: #fdf5e6 !important;
+    color: #07080b !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+}
+/* ===== СВЕТЛАЯ ТЕМА: кнопки входа и профиля ===== */
+body.light-theme #login-btn,
+body.light-theme #profile-btn {
+    background: #fdf5e6 !important;
+    color: #07080b !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.light-theme #login-btn:hover,
+body.light-theme #profile-btn:hover {
+    background: #f5f5dc !important;
+    color: #07080b !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    transform: none !important;
+}
+/* Жесткий принудительный кремовый стиль для светлой темы */
+body.light-theme #login-btn,
+body.light-theme #profile-btn {
+    background: #fdf5e6 !important; /* Мягкий кремовый оттенок */
+    color: #07080b !important;       /* Контрастный черный текст */
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;    /* Физический объем кнопок */
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+}
+
+/* Полностью глушим радужный перелив в светлой теме, чтобы он не закрашивал буквы */
+body.light-theme #login-btn:before,
+body.light-theme #profile-btn:before {
+    display: none !important;
+    opacity: 0 !important;
+}
+/* ============================================================
+   ФИНАЛЬНЫЙ СУПЕР-ЖЕСТКИЙ ФИКС: КРЕМОВАЯ Кнопка "Войти"
+   ============================================================ */
+
+/* Заставляем кнопку сбросить черный цвет на уровне ID и тегов */
+html body.light-theme button#login-btn,
+html body.light-theme a#profile-btn,
+html body.light-theme .nav-link-btn {
+    background: #fdf5e6 !important;       /* Мягкий кремовый фон */
+    background-color: #fdf5e6 !important; /* Дублируем для надежности */
+    color: #07080b !important;            /* Строго глубокий черный текст */
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border-radius: 8px !important;         /* Округляем углы */
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+    opacity: 1 !important;                 /* Убираем любую невидимость текста */
+    display: inline-flex !important;
+}
+
+/* Эффект при наведении в светлой теме */
+html body.light-theme button#login-btn:hover,
+html body.light-theme a#profile-btn:hover {
+    background: #f5f5dc !important;       /* Чуть более плотный кремовый цвет */
+    background-color: #f5f5dc !important;
+    color: #000000 !important;            /* Текст остается идеально черным */
+}
+
+/* Намертво отключаем черные градиенты и радугу при ховере в светлой теме */
+html body.light-theme button#login-btn:before,
+html body.light-theme a#profile-btn:before,
+html body.light-theme button#login-btn:after,
+html body.light-theme a#profile-btn:after {
+    display: none !important;
+    opacity: 0 !important;
+    background: transparent !important;
+}
+/* ===== ФИКС КЛИКАБЕЛЬНОСТИ КНОПОК В СВЕТЛОЙ ТЕМЕ ===== */
+body.light-theme #login-btn,
+body.light-theme #profile-btn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 1 !important;
+}
+
+/* Отключаем клики для псевдоэлементов, чтобы они не мешали */
+body.light-theme #login-btn::before,
+body.light-theme #login-btn::after,
+body.light-theme #profile-btn::before,
+body.light-theme #profile-btn::after {
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+/* ============================================================
+   ТАКТИЛЬНЫЙ ОТКЛИК КРЕМОВЫХ КНОПОК В СВЕТЛОЙ ТЕМЕ
+   ============================================================ */
+
+/* Эффект наведения — кнопка мягко приподнимается */
+html body.light-theme button#login-btn:hover,
+html body.light-theme a#profile-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Эффект клика — кнопка физически прожимается внутрь */
+html body.light-theme button#login-btn:active,
+html body.light-theme a#profile-btn:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+/* ============================================================
+   СУПЕР-ЖЕСТКИЙ ФИКС: ТАКТИЛЬНАЯ БЕЛАЯ/СЕРАЯ КНОПКА ШАПКИ
+   ============================================================ */
+
+/* Обычное состояние в светлой теме — цвет чуть темнее фона */
+html body.light-theme button#login-btn,
+html body.light-theme a#profile-btn,
+html body.light-theme .nav-link-btn {
+    background: #f0f2f5 !important;       /* Белый, но слегка сероватый оттенок */
+    background-color: #f0f2f5 !important;
+    color: #07080b !important;            /* Строго глубокий черный текст */
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 8px !important;         /* Закругление углов */
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important;
+    display: inline-flex !important;
+    align-items: center;
+    pointer-events: auto !important;       /* Разрешаем клики мыши */
+    cursor: pointer !important;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Эффект наведения — кнопка мягко приподнимается и становится капельку темнее */
+html body.light-theme button#login-btn:hover,
+html body.light-theme a#profile-btn:hover {
+    background: #e4e7eb !important;       /* Более плотный благородный серый */
+    background-color: #e4e7eb !important;
+    color: #000000 !important;            /* Текст остается идеально черным */
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Эффект клика — кнопка физически прожимается внутрь */
+html body.light-theme button#login-btn:active,
+html body.light-theme a#profile-btn:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Намертво отключаем черные градиенты и радугу при ховере в светлой теме */
+html body.light-theme button#login-btn:before,
+html body.light-theme a#profile-btn:before,
+html body.light-theme button#login-btn:after,
+html body.light-theme a#profile-btn:after {
+    display: none !important;
+    opacity: 0 !important;
+    background: transparent !important;
+}
+/* ============================================================
+   ФИНАЛЬНЫЙ ФИКС: ТАКТИЛЬНЫЕ И ЧЁРНЫЕ КНОПКИ ШАПКИ (ВХОД И ТЕМА)
+   ============================================================ */
+
+/* Обычное состояние в светлой теме — цвет чуть темнее фона, текст строго ЧЕРНЫЙ */
+html body.light-theme button#login-btn,
+html body.light-theme button#theme-toggle,
+html body.light-theme a#profile-btn,
+html body.light-theme .nav-link-btn {
+    background: #f0f2f5 !important;       /* Благородный серовато-белый оттенок */
+    background-color: #f0f2f5 !important;
+    color: #07080b !important;            /* Жестко глубокий черный текст */
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 8px !important;         /* Округляем углы для объема */
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important;
+    display: inline-flex !important;
+    align-items: center;
+    pointer-events: auto !important;       /* Обрабатываем клики мыши */
+    cursor: pointer !important;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Эффект упругого наведения — кнопки приподнимаются */
+html body.light-theme button#login-btn:hover,
+html body.light-theme button#theme-toggle:hover,
+html body.light-theme a#profile-btn:hover {
+    background: #e4e7eb !important;       /* Становятся капельку темнее шапки */
+    background-color: #e4e7eb !important;
+    color: #000000 !important;            /* Текст остается идеально черным */
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Эффект физического клика — кнопки прожимаются внутрь */
+html body.light-theme button#login-btn:active,
+html body.light-theme button#theme-toggle:active,
+html body.light-theme a#profile-btn:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Жестко заставляем хедер на странице Латекса работать как на индексе */
+body:has(.editor-container) header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 90% !important;
+    max-width: 1100px !important;
+    margin: 20px auto 0 auto !important;
+    margin-top: 40px !important;
+}
+
+/* Сдвигаем редактор формул вниз, чтобы он не залезал под парящую шапку */
+body:has(.editor-container) .editor-container {
+    margin-top: 50px !important;
+}
+/* Полное выравнивание хедера на странице Латекса один в один с индексом */
+body:has(.editor-container) header {
+    position: absolute !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 1100px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+}
+
+/* Опускаем сам редактор формул, чтобы он плавно стоял под шапкой */
+body:has(.editor-container) .editor-container {
+    margin-top: 120px !important;
+}
+/* Мост для страницы Латекса: вытаскиваем хедер из зажима body */
+body:has(.editor-container) header {
+    position: absolute !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 1100px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    z-index: 9999 !important;
+}
+
+/* Фикс, чтобы сам редактор формул не залезал под парящую шапку */
+body:has(.editor-container) .editor-container {
+    margin-top: 140px !important;
+}
+/* ============================================================
+   ФИНАЛЬНЫЙ ФИКС: ТАКТИЛЬНЫЕ И КОНТРАСТНЫЕ КНОПКИ ШАПКИ (ВХОД И ТЕМА)
+   ============================================================ */
+
+/* Обычное состояние в светлой теме — цвет чуть темнее фона, текст строго ЧЕРНЫЙ */
+html body.light-theme button#login-btn,
+html body.light-theme button#theme-toggle,
+html body.light-theme button.theme-btn, /* Добавили на случай, если это класс */
+html body.light-theme a#profile-btn,
+html body.light-theme .nav-link-btn {
+    background: #f0f2f5 !important;       /* Благородный серовато-белый оттенок */
+    background-color: #f0f2f5 !important;
+    color: #07080b !important;            /* Жестко глубокий черный текст */
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 8px !important;         /* Округляем углы для объема */
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important;
+    display: inline-flex !important;
+    align-items: center;
+    pointer-events: auto !important;       /* Обрабатываем клики мыши */
+    cursor: pointer !important;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Эффект упругого наведения — кнопки приподнимаются, текст ОСТАЕТСЯ ЧЕРНЫМ */
+html body.light-theme button#login-btn:hover,
+html body.light-theme button#theme-toggle:hover,
+html body.light-theme button.theme-btn:hover,
+html body.light-theme a#profile-btn:hover {
+    background: #e4e7eb !important;       /* Становятся капельку темнее шапки */
+    background-color: #e4e7eb !important;
+    color: #000000 !important;            /* Жестко фиксируем черный цвет текста */
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Эффект физического клика — кнопки прожимаются внутрь */
+html body.light-theme button#login-btn:active,
+html body.light-theme button#theme-toggle:active,
+html body.light-theme button.theme-btn:active,
+html body.light-theme a#profile-btn:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Намертво отключаем любые темные псевдоэлементы, градиенты и радугу при ховере в светлой теме */
+html body.light-theme button#theme-toggle:before,
+html body.light-theme button#theme-toggle:after,
+html body.light-theme button.theme-btn:before,
+html body.light-theme button.theme-btn:after {
+    display: none !important;
+    opacity: 0 !important;
+    background: transparent !important;
+}
+
+/* Жестко заставляем хедер на странице Латекса работать как на индексе */
+body:has(.editor-container) header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 90% !important;
+    max-width: 1100px !important;
+    margin: 20px auto 0 auto !important;
+    margin-top: 40px !important;
+}
+
+/* Сдвигаем редактор формул вниз, чтобы он не залезал под парящую шапку */
+body:has(.editor-container) .editor-container {
+    margin-top: 50px !important;
+}
+
+/* Полное выравнивание хедера на странице Латекса один в один с индексом */
+body:has(.editor-container) header {
+    position: absolute !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 1100px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+/* ===== MOBILE HORIZONTAL-OVERFLOW FIX ===== */
+html { overflow-x: hidden; }
+body { overflow-x: hidden; max-width: 100%; }
+img, video, svg, canvas { max-width: 100%; height: auto; }
+@media (max-width: 640px) {
+    header { width: 96%; flex-wrap: wrap; }
+    .header-right { flex-wrap: wrap; justify-content: flex-end; }
+    #login-btn, #profile-btn { min-width: 0 !important; padding-left: 14px !important; padding-right: 14px !important; }
+    .nav-link-btn, #theme-toggle { margin-left: 8px !important; }
+    .logo-text { font-size: 13px; }
+    main { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* ===== ФИКС: страница всегда видима, даже если JS не отработал ===== */
+body:not(.page-fade-out) { opacity: 1 !important; }
+
+/* ===== PREMIUM SKIN (NoName) ===== */
+:root {
+  --bg-main: #0a0914;
+  --bg-surface: rgba(255,255,255,.045);
+  --bg-card: rgba(255,255,255,.04);
+  --border-color: rgba(255,255,255,.1);
+  --accent-start: #4f6df5;
+  --accent-end: #8b5cf6;
+  --accent-glow: rgba(99,102,241,.3);
+  --btn-primary-bg: linear-gradient(135deg, #4f6df5, #8b5cf6);
+  --btn-primary-hover: linear-gradient(135deg, #5f7bff, #9d6cff);
+  --text-primary: #eceaf6;
+  --text-secondary: #a5a1ba;
+  --text-muted: #6b6784;
+  --shadow: 0 12px 44px rgba(0,0,0,.5);
+  --card-shadow: 0 10px 32px rgba(0,0,0,.35);
+}
+body.light-theme {
+  --bg-main: #f4f3fa;
+  --bg-surface: rgba(255,255,255,.75);
+  --bg-card: rgba(255,255,255,.8);
+  --border-color: rgba(20,18,40,.09);
+  --accent-start: #4a5cf0;
+  --accent-end: #7a4cf5;
+  --btn-primary-bg: linear-gradient(135deg, #4a5cf0, #7a4cf5);
+  --text-primary: #17151f;
+  --text-secondary: #4a4758;
+  --text-muted: #7d7a8f;
+  --shadow: 0 12px 40px rgba(30,28,50,.12);
+  --card-shadow: 0 10px 28px rgba(30,28,50,.08);
+}
+
+/* landing hero */
+#landing h1 {
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  background: linear-gradient(115deg, var(--text-primary) 30%, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+#landing p { font-size: 1.15rem; color: var(--text-secondary); }
+.landing-eyebrow {
+  display: inline-block; font-size: 12px; letter-spacing: 2.5px;
+  text-transform: uppercase; color: #8b5cf6; margin-bottom: 18px;
+}
+.landing-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 34px; }
+.btn-outline {
+  background: transparent !important; box-shadow: none !important;
+  border: 1px solid var(--border-color) !important; color: var(--text-primary) !important;
+}
+.btn-outline:hover { border-color: #8b5cf6 !important; }
+
+/* refined cards */
+.project-card {
+  border-radius: 18px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow);
+  transition: transform .28s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, border-color .3s ease;
+  animation: nnRise .6s cubic-bezier(.2,.7,.2,1) both;
+}
+.project-card:hover {
+  transform: translateY(-6px); border-color: rgba(99,102,241,.4);
+  box-shadow: 0 22px 54px rgba(99,102,241,.22);
+}
+
+/* refined buttons */
+.btn-primary, .project-btn { border-radius: 12px; transition: transform .18s ease, box-shadow .25s ease; }
+.btn-primary:hover, .project-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(139,92,246,.42); }
+
+/* refined header */
+header {
+  background: rgba(10,9,20,.55) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+}
+
+@keyframes nnRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ===== МОДАЛЬНЫЕ ОКНА: АНИМАЦИЯ ===== */
+.auth-modal { animation: nnModalIn .34s cubic-bezier(.2,.7,.2,1); }
+.profile-modal { animation: nnModalIn .34s cubic-bezier(.2,.7,.2,1); }
+@keyframes nnModalIn {
+  from { opacity: 0; transform: translateY(18px) scale(.95); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ===== NEON SKIN (radical) ===== */
+:root {
+  --bg-main: #05060f;
+  --bg-surface: rgba(10,12,30,.6);
+  --bg-card: rgba(10,12,30,.65);
+  --border-color: rgba(120,140,255,.22);
+  --accent-start: #4d7cff;
+  --accent-end: #a855f7;
+  --accent-glow: rgba(168,85,247,.4);
+  --btn-primary-bg: linear-gradient(135deg, #4d7cff, #a855f7);
+  --btn-primary-hover: linear-gradient(135deg, #5f8bff, #b26bff);
+  --text-primary: #eef0ff;
+  --text-secondary: #a6adf0;
+  --text-muted: #7a80c0;
+  --shadow: 0 0 30px rgba(77,124,255,.25);
+  --card-shadow: 0 0 24px rgba(77,124,255,.15);
+}
+body.light-theme {
+  --bg-main: #eef0fb;
+  --bg-surface: rgba(255,255,255,.8);
+  --bg-card: rgba(255,255,255,.85);
+  --border-color: rgba(70,90,200,.2);
+  --accent-start: #3f5ce0;
+  --accent-end: #8b3fe0;
+  --text-primary: #14162e;
+  --text-secondary: #3d4360;
+  --text-muted: #6a7090;
+}
+
+/* neon grid backdrop */
+body {
+  background-image:
+    linear-gradient(rgba(77,124,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77,124,255,.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* neon header */
+header {
+  background: rgba(5,6,15,.7) !important;
+  border: 1px solid rgba(120,140,255,.3);
+  box-shadow: 0 0 24px rgba(77,124,255,.25);
+}
+
+/* neon headings */
+#landing h1 {
+  color: var(--text-primary);
+  text-shadow: 0 0 30px rgba(168,85,247,.45);
+  -webkit-text-fill-color: var(--text-primary);
+}
+#projects-section h2, main > h1, .mods-page h1 {
+  text-shadow: 0 0 24px rgba(168,85,247,.4);
+}
+
+/* neon cards */
+.project-card {
+  border: 1px solid rgba(120,140,255,.28);
+  box-shadow: 0 0 22px rgba(77,124,255,.14), inset 0 0 18px rgba(77,124,255,.05);
+}
+.project-card:hover {
+  border-color: rgba(168,85,247,.6);
+  box-shadow: 0 0 34px rgba(168,85,247,.3);
+}
+
+/* neon buttons */
+.btn-primary, .project-btn {
+  box-shadow: 0 0 20px rgba(77,124,255,.4);
+}
+.btn-primary:hover, .project-btn:hover {
+  box-shadow: 0 0 30px rgba(168,85,247,.55);
+}
+
+/* logo glow */
+.logo-text { text-shadow: 0 0 14px rgba(77,124,255,.5); }
+
+/* ===== SITE-WIDE ANIMATIONS (как на NoName Drop) ===== */
+body::before { display: none !important; }
+body::after {
+  content: "" !important; display: block !important; position: fixed !important;
+  left: 0 !important; right: 0 !important; top: -45% !important; bottom: auto !important;
+  width: auto !important; height: 45% !important; border-radius: 0 !important; filter: none !important;
+  opacity: 1 !important; z-index: 1 !important; pointer-events: none !important;
+  background: linear-gradient(180deg, transparent, rgba(77,124,255,.06), transparent) !important;
+  animation: nnScan 8s linear infinite !important;
+}
+@keyframes nnScan { to { transform: translateY(380%); } }
+
+.nn-reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+.nn-reveal.nn-reveal-in { opacity: 1; transform: none; }
+.project-card { animation: none !important; }
+
+#landing h1, #projects-section h2 { animation: nnGlow 4s ease-in-out infinite; }
+@keyframes nnGlow { 0%,100% { text-shadow: 0 0 22px rgba(168,85,247,.35); } 50% { text-shadow: 0 0 42px rgba(168,85,247,.7); } }
+
+/* ===== HEADER BUTTONS: аккуратный редизайн ===== */
+html body header .header-right { display: flex !important; align-items: center !important; gap: 10px !important; }
+
+html body header .header-right button#theme-toggle {
+  background: transparent !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  font: inherit !important; font-size: 13px !important; font-weight: 500 !important;
+  padding: 8px 16px !important; border-radius: 10px !important;
+  cursor: pointer !important; box-shadow: none !important;
+  transition: border-color .2s, color .2s !important;
+}
+html body header .header-right button#theme-toggle:hover {
+  border-color: var(--accent-end) !important; color: var(--accent-end) !important;
+}
+html body header .header-right button#login-btn {
+  background: var(--btn-primary-bg) !important;
+  border: 1px solid transparent !important;
+  color: #fff !important;
+  font: inherit !important; font-size: 13px !important; font-weight: 600 !important;
+  padding: 8px 20px !important; border-radius: 10px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 16px rgba(77,124,255,.3) !important;
+  transition: transform .15s, box-shadow .25s !important;
+}
+html body header .header-right button#login-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(168,85,247,.45) !important;
+}
+html body header .header-right button#login-btn::before,
+html body header .header-right button#login-btn::after { display: none !important; }
+
+html body.light-theme header .header-right button#theme-toggle {
+  border-color: rgba(0,0,0,.14) !important; color: #3d4360 !important;
+}
+html body.light-theme header .header-right button#theme-toggle:hover {
+  border-color: #7a4cf5 !important; color: #7a4cf5 !important;
+}
+html body.light-theme header .header-right button#login-btn {
+  background: var(--btn-primary-bg) !important; color: #fff !important;
+  box-shadow: 0 4px 16px rgba(122,76,245,.3) !important;
+}
+html body.light-theme header .header-right button#login-btn:hover {
+  box-shadow: 0 8px 24px rgba(122,76,245,.5) !important;
+}
+
+/* ===== GAME MOD CARDS (shared: mods, gmod, mc, msc, mwc) ===== */
+.mods-page main { padding-top: 2rem; }
+.mods-page h1 {
+  font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; text-align: center;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 2.5rem; letter-spacing: 2px;
+}
+.mods-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px;
+  max-width: 900px; margin: 0 auto 50px; padding: 0 24px;
+}
+.mod-card {
+  position: relative; aspect-ratio: 1 / 1; border-radius: 20px; overflow: hidden;
+  background: rgba(20, 15, 40, .6); border: 1px solid rgba(124, 58, 237, .4);
+  box-shadow: 0 0 20px rgba(124, 58, 237, .1);
+  transition: transform .3s, box-shadow .3s, border-color .3s;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; color: #fff;
+}
+.mod-card .mod-bg {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  filter: blur(2px); opacity: .55; transition: opacity .3s; z-index: 0;
+}
+.mod-card .mod-content {
+  position: relative; z-index: 1; text-align: center; padding: 24px;
+  width: 100%; height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: rgba(8, 5, 18, .5); backdrop-filter: blur(2px); transition: background .3s;
+}
+.mod-card .mod-content h2 {
+  font-size: 26px; font-weight: 700; margin: 0; color: #fff !important;
+  text-shadow: 0 0 20px rgba(124, 58, 237, .7); letter-spacing: .5px;
+}
+.mod-card .mod-content p {
+  font-size: 14px; color: rgba(255, 255, 255, .85) !important; margin-top: 6px;
+}
+.mod-card:hover {
+  transform: translateY(-4px) scale(1.02); border-color: #a78bfa;
+  box-shadow: 0 0 40px rgba(124, 58, 237, .45);
+}
+.mod-card:hover .mod-bg { opacity: .75; }
+@media (max-width: 640px) {
+  .mods-grid { grid-template-columns: 1fr; gap: 20px; max-width: 420px; }
+}
+
+
+/* ===== MOBILE SAFETY NET: content always visible ===== */
+@media (max-width: 700px) {
+  body, body.page-fade-out, body.page-loaded { opacity: 1 !important; }
+  .nn-reveal, .reveal, .project-card, .mod-card, #landing h1, #landing p, .btn-primary, section > h2, main > h1 {
+    opacity: 1 !important; transform: none !important; animation: none !important;
+  }
+  body::before, body::after { display: none !important; }
+}

@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+        <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoName LaTeX Редактор</title>
+    
+    <!-- Ссылки строго из твоего шаблона версии 0.18.7 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.7/dist/katex.min.css" integrity="sha384-JctiRyLzXCrSoOOzFlSoWLdyzQl7OrrRnhyeBmzB6ZWtcjccUyc8lCQJqIbs3uQX" crossorigin="anonymous">
+    
+    <!-- Убрали defer, чтобы скрипт загружался МГНОВЕННО и не вызывал ошибок в консоли -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.18.7/dist/katex.min.js" integrity="sha384-+7Keh381hSkXmXqnjC0JBM/kzsN6TFj+wMKychSLjTvJ8/0ElMde2uKl8i6p6Buj" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="mascot.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoName Projects</title>
+    <!-- Подключение Supabase JS (актуальная стабильная версия) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <!-- Подключение внешних стилей и скриптов -->
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script><script src="anim.js" defer></script>
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            background-color: #070610;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Твои неоновые сферы */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+            width: 400px;
+            height: 400px;
+        }
+        body::before {
+            background: radial-gradient(circle, #0072ff, transparent 70%);
+            top: -100px; left: -100px;
+        }
+        body::after {
+            background: radial-gradient(circle, #7000ff, transparent 70%);
+            bottom: -120px; right: -120px;
+        }
+
+        .editor-container {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 30px 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 1;
+
+            /* 10000% ЖЕЛЕЗНЫЙ ФИКС АДАПТИВНОГО ЦЕНТРИРОВАНИЯ */
+            position: absolute !important;
+            left: 50% !important;
+            top: 15vh !important; /* Четко опускает блок на 15% от верха экрана, защищая от наезда хедера */
+            transform: translateX(-50%) !important; /* Идеально выравнивает по центру по горизонтали */
+            margin: 0 !important;
+        }
+
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        textarea:focus {
+            border-color: #0072ff;
+            box-shadow: 0 0 15px rgba(0, 114, 255, 0.25);
+        }
+
+        .hints {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .hint-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #a2a1b6;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .hint-btn:hover {
+            background: rgba(0, 114, 255, 0.15);
+            border-color: #0072ff;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .preview-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 30px 20px;
+            min-height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            overflow-x: auto;
+        }
+
+        #math-output {
+            font-size: 26px;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(0, 114, 255, 0.6);
+            text-align: center;
+            width: 100%;
+        }
+
+        .error {
+            color: #ff4a4a;
+            font-size: 15px;
+        }
+        /* ===== КРАСИВАЯ СВЕТЛАЯ ТЕМА ДЛЯ РЕДАКТОРА ЛАТЕХА ===== */
+
+/* Красивый мягкий фон для контейнера редактора */
+body.light-theme .editor-container {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06) !important;
+    color: #161820 !important;
+}
+
+/* Контрастное поле ввода */
+body.light-theme textarea {
+    background: #f7f8fa !important;
+    border: 1px solid #e4e7eb !important;
+    color: #161820 !important;
+}
+body.light-theme textarea:focus {
+    border-color: #4a6cf7 !important;
+    box-shadow: 0 0 12px rgba(74, 108, 247, 0.15) !important;
+}
+
+/* Четкие и тактильные кнопки подсказок */
+body.light-theme .hint-btn {
+    background: #f0f2f5 !important;
+    border: 1px solid #e4e7eb !important;
+    color: #4a5568 !important;
+    font-weight: 500 !important;
+}
+body.light-theme .hint-btn:hover {
+    background: #4a6cf7 !important;
+    border-color: #4a6cf7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.2) !important;
+}
+
+/* Идеально чистое белое поле вывода формулы (без уродского серого квадрата) */
+body.light-theme .preview-box {
+    background: #ffffff !important;
+    border: 1px solid #e4e7eb !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Глубокий черный цвет для самой математической формулы */
+body.light-theme #math-output {
+    color: #161820 !important;
+    text-shadow: none !important;
+}
+
+/* Ошибка ввода в светлой теме */
+body.light-theme .error {
+    color: #e53e3e !important;
+}
+
+    </style>
+
+</head>
+<body>
+    <!-- ШАПКА В СТИЛЕ PWGOODSTORE -->
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="mascot.png" alt="NoName" class="site-logo-img">
+                <span class="logo-text">NoName Projects</span>
+            </a>
+        </div>
+        <div class="header-center">
+            <a href="projects.html" class="nav-link">Проекты</a>
+        </div>
+            <div class="header-right">
+                <button id="theme-toggle">Тема</button>
+                <button id="login-btn" class="nav-link-btn">Войти</button>
+                
+                <!-- ВСТАВКА ТУТ: Контейнер для аватарки и ника из Стима -->
+                <div id="profile-btn" class="nav-link-btn" style="display: none; cursor: pointer; align-items: center;"></div>
+            </div> <!-- ФИКС: Закрыли header-right как положено -->
+        </div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+
+    <div class="editor-container">
+        <!-- Поле ввода -->
+        <textarea id="latex-input" placeholder="Пиши LaTeX код сюда...">x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}</textarea>
+        
+        <!-- Кнопки подсказок -->
+        <div class="hints">
+        <div class="hints">
+            <button class="hint-btn" data-code="\frac{a}{b}">Дробь</button>
+            <button class="hint-btn" data-code="\sqrt[n]{x}">Корень</button>
+            <button class="hint-btn" data-code="\int_{a}^{b} x^2 \,dx">Интеграл</button>
+            <button class="hint-btn" data-code="\log_{a}{b}">Логарифм</button>
+            <button class="hint-btn" data-code="\begin{cases} x + y = 5 \\ 2x - y = 1 \end{cases}">Система</button>
+            <button class="hint-btn" data-code="\alpha + \beta = \gamma">Греческие</button>
+        </div>
+
+        <!-- Поле вывода -->
+        <div class="preview-box">
+            <div id="math-output"></div>
+        </div>
+    </div>
+
+    <script>
+        // Код сработает только когда страница полностью собралась
+        window.addEventListener('load', () => {
+            const input = document.getElementById('latex-input');
+            const output = document.getElementById('math-output');
+
+            function updateMath() {
+                if (typeof katex === 'undefined') {
+                    output.innerHTML = "<span class='error'>Движок KaTeX еще не загрузился...</span>";
+                    return;
+                }
+                try {
+                    // Рендерим чистый LaTeX код напрямую
+                    katex.render(input.value, output, {
+                        throwOnError: true,
+                        displayMode: true
+                    });
+                } catch (err) {
+                    output.innerHTML = "<span class='error'>Синтаксис формулы не завершен...</span>";
+                }
+            }
+
+            // Вешаем обработчики на твои кнопки подсказок
+            document.querySelectorAll('.hint-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    input.value = button.getAttribute('data-code');
+                    updateMath();
+                    input.focus();
+                });
+            });
+
+            // Интерактивное обновление при вводе
+            input.addEventListener('input', updateMath);
+            
+            // Запускаем стартовый рендер дискриминанта
+            updateMath();
+            input.focus();
+        });
+    </script>
+
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garry's Mod — NoName Projects</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="mascot.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <script src="app.js" defer></script><script src="anim.js" defer></script>
+</head>
+<body class="mods-page" style="opacity: 1 !important;">
+
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="mascot.png" alt="NoName" class="site-logo-img">
+                <span class="logo-text">NoName Projects</span>
+            </a>
+        </div>
+        <div class="header-center">
+            <a href="projects.html" class="nav-link-btn">Проекты</a>
+        </div>
+        <div class="header-right">
+            <button id="theme-toggle" class="theme-toggle">🌓</button>
+            <button id="login-btn">Войти</button>
+            <a id="profile-btn" style="display: none;"></a>
+        </div>
+    </header>
+
+    <main>
+        <h1>Garry's Mod</h1>
+        <div class="mods-grid">
+            <a href="none.html" class="mod-card">
+                <div class="mod-bg" style="background-image:url('mod1.png');"></div>
+                <div class="mod-content">
+                    <h2>Моды</h2>
+                    <p>Сборники модов для Garry's Mod</p>
+                </div>
+            </a>
+            <a href="none.html" class="mod-card">
+                <div class="mod-bg"></div>
+                <div class="mod-content">
+                    <h2>Что-то ещё?</h2>
+                    <p>Другие категории</p>
+                </div>
+            </a>
+        </div>
+    </main>
+
+</body>
+</html>

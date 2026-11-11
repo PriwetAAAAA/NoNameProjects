@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="mascot.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoName Projects</title>
+    <!-- Подключение Supabase JS (актуальная стабильная версия) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+    <!-- Подключение внешних стилей и скриптов -->
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script><script src="anim.js" defer></script>
+</head>
+<body>
+    <!-- ШАПКА В СТИЛЕ PWGOODSTORE -->
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="mascot.png" alt="NoName" class="site-logo-img">
+                <span class="logo-text">NoName Projects</span>
+            </a>
+        </div>
+        <div class="header-center">
+            <a href="projects.html" class="nav-link">Проекты</a>
+        </div>
+            <div class="header-right">
+                <button id="theme-toggle">Тема</button>
+                <button id="login-btn" class="nav-link-btn">Войти</button>
+                
+                <!-- ВСТАВКА ТУТ: Контейнер для аватарки и ника из Стима -->
+                <div id="profile-btn" class="nav-link-btn" style="display: none; cursor: pointer; align-items: center;"></div>
+            </div> <!-- ФИКС: Закрыли header-right как положено -->
+        </div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main>
+        <!-- Блок LANDING (витрина) — всегда виден -->
+        <section id="landing">
+            <span class="landing-eyebrow">Проекты и разработки NoName</span>
+            <h1>Добро пожаловать в NoName Projects</h1>
+            <p>Игровые серверы, приложения и другие разработки — всё в одном месте.</p>
+            <a href="projects.html" class="btn-primary">Посмотреть проекты</a>
+        </section>
+    </main>
+</html>
