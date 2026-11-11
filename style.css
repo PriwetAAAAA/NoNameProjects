@@ -2116,3 +2116,24 @@ html body.light-theme header .header-right button#login-btn:hover {
   }
   body::before, body::after { display: none !important; }
 }
+
+
+/* ===== TOAST ===== */
+.nn-toast {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    z-index: 9999;
+    background: rgba(10, 12, 30, .96);
+    color: #eef0ff;
+    border: 1px solid rgba(120, 140, 255, .4);
+    border-radius: 14px;
+    padding: 14px 20px;
+    font-size: 14px; font-weight: 600;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+    opacity: 0; transform: translateY(14px);
+    transition: opacity .3s, transform .3s;
+    pointer-events: none;
+    max-width: 90vw; word-break: break-word;
+}
+.nn-toast.in { opacity: 1; transform: none; }
+body.light-theme .nn-toast { background: #ffffff; color: #14162e; border-color: rgba(70, 90, 200, .3); }
