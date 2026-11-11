@@ -27,8 +27,8 @@
     }
 
     function injectAppButton() {
-        var page = (location.pathname || '').split('/').pop() || 'index.html';
-        if (page !== 'nnchat.html') return;   // только на странице NoName Chatter (веб)
+        var p = (location.pathname || '').toLowerCase();
+        if (p.indexOf('nnchat') === -1) return;   // только на странице NoName Chatter (веб)
         if (document.getElementById('nn-app-dl')) return;
         var a = document.createElement('button');
         a.id = 'nn-app-dl';
