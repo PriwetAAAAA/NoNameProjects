@@ -15,10 +15,9 @@
         ov.id = 'nn-app-modal';
         ov.style.cssText = 'position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
         ov.innerHTML = '<div class="nn-donate-card">'
-            + '<h3>Приложения Android</h3>'
-            + '<p>Выбери, что скачать:</p>'
+            + '<h3>NoName Chatter</h3>'
+            + '<p>Мессенджер для Android — чат, друзья, группы. Устанавливается как обычное приложение.</p>'
             + '<a class="donate-btn" href="NoNameChatter.apk" download>Скачать NoName Chatter</a>'
-            + '<a class="donate-btn" href="https://github.com/PowerTunnel-Project/PowerTunnel/releases" target="_blank" rel="noopener">Скачать подменщик региона</a>'
             + '<button class="close" id="nn-app-close">Закрыть</button>'
             + '</div>';
         document.body.appendChild(ov);

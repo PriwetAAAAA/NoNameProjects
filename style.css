@@ -2206,3 +2206,34 @@ body.light-theme .nn-donate-card p { color: #5c626b; }
 * { scrollbar-width: none; -ms-overflow-style: none; }
 *::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
 html, body { scrollbar-width: none; }
+
+
+/* ===== КРАСИВАЯ КНОПКА ANDROID (обновлённая) ===== */
+.nn-app-dl {
+    position: fixed; bottom: 26px; right: 26px; z-index: 9000;
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.85);
+    cursor: pointer;
+    background: linear-gradient(135deg, #5b8cff, #b46bff);
+    box-shadow: 0 10px 30px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.3);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s;
+}
+.nn-app-dl::before {
+    content: ''; position: absolute; inset: -2px; border-radius: 50%;
+    border: 2px solid rgba(168,85,247,.6);
+    animation: nnAppPulse 2.4s ease-out infinite;
+    pointer-events: none;
+}
+@keyframes nnAppPulse {
+    0% { transform: scale(1); opacity: .8; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+.nn-app-dl:hover { transform: scale(1.1); box-shadow: 0 16px 40px rgba(124,58,237,.65), inset 0 1px 0 rgba(255,255,255,.3); }
+.nn-app-dl:active { transform: scale(.94); }
+.nn-app-dl svg { width: 30px; height: 30px; position: relative; z-index: 1; }
+
+/* анимации кнопок в попапах */
+.donate-btn { transition: transform .2s, box-shadow .2s; }
+.donate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,46,196,.5); }
