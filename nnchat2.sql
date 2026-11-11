@@ -4,13 +4,17 @@
 -- (можно поверх старого, не ломает)
 -- ============================================================
 
--- Публичные профили (имя/аватар/последняя активность) — пароль сюда НЕ пишем
+-- Публичные профили (имя/аватар/почта для 2FA) — пароль сюда НЕ пишем
 create table if not exists profiles (
   id text primary key,
   name text,
   avatar text,
+  email text,
   last_seen timestamptz default now()
 );
+
+-- если таблица profiles уже создана без email — добавим колонку
+alter table profiles add column if not exists email text;
 
 -- Группы
 create table if not exists groups (
