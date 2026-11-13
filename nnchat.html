@@ -201,6 +201,34 @@ body.light-theme .profile-status { color: #6a7090 !important; }
 .person-prof:hover { opacity: 1; color: #a6adf0; transform: scale(1.15); }
 .nl-card button.warn { width: 100%; min-height: 44px; border-radius: 11px; border: 1px solid rgba(255,150,0,.45); background: rgba(255,150,0,.12); color: #ffb347; cursor: pointer; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 .nl-card button.leave { width: 100%; min-height: 44px; border-radius: 11px; border: 1px solid rgba(239,68,68,.45); background: rgba(239,68,68,.12); color: #ff8a8a; cursor: pointer; font-size: 14px; font-weight: 600; }
+
+.chat-input-bar .attach:active { transform: scale(.94); }
+.attach { position: relative; z-index: 2; }
+
+/* ===== ЗВОНКИ ===== */
+.call-bar {
+    position: fixed; right: 22px; bottom: 92px; z-index: 210;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 18px;
+    background: rgba(12,14,28,.94); border: 1px solid rgba(120,140,255,.35);
+    box-shadow: 0 14px 44px rgba(0,0,0,.65);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    min-width: 260px;
+}
+.call-bar.hidden { display: none; }
+.call-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg,#4d7cff,#a855f7); display: flex; align-items: center;
+    justify-content: center; font-weight: 800; color: #fff; font-size: 18px; }
+.call-info { flex: 1; min-width: 0; }
+.call-name { font-weight: 700; color: #eef0ff; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.call-status { color: #a6adf0; font-size: 12px; }
+.call-btn { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.07);
+    color: #fff; cursor: pointer; font-size: 17px; transition: background .15s, transform .1s; }
+.call-btn:hover { background: rgba(255,255,255,.16); }
+.call-btn:active { transform: scale(.93); }
+.call-btn.danger, .call-btn.muted { background: #ef4444; border-color: #ef4444; }
+@media (max-width: 640px) { .call-bar { left: 12px; right: 12px; bottom: 78px; min-width: 0; } }
 </style>
 </head>
 <body class="nnchat-page">
@@ -243,6 +271,7 @@ body.light-theme .profile-status { color: #6a7090 !important; }
                         <div class="sub" id="connText">Подключение...</div>
                     </div>
                     <button class="gear" id="mailBtn" title="Почта">✉</button>
+                    <button class="gear" id="callBtn" title="Позвонить">📞</button>
                 </div>
                 <div class="chat-msgs" id="msgs">
                     <div class="chat-empty" id="empty">Выбери друга или группу слева</div>
@@ -255,6 +284,29 @@ body.light-theme .profile-status { color: #6a7090 !important; }
             </section>
         </div>
     </main>
+
+    <!-- Панель звонка -->
+    <div class="call-bar hidden" id="callBar">
+        <div class="call-avatar" id="callAv">?</div>
+        <div class="call-info">
+            <div class="call-name" id="callName">—</div>
+            <div class="call-status" id="callStatus">—</div>
+        </div>
+        <button id="callMic" class="call-btn" title="Микрофон">🎤</button>
+        <button id="callEnd" class="call-btn danger" title="Завершить">✕</button>
+    </div>
+
+    <!-- Входящий звонок -->
+    <div class="nl-modal" id="incomingModal">
+        <div class="nl-card" style="text-align:center">
+            <h3>Входящий звонок</h3>
+            <p id="incName">—</p>
+            <div class="row">
+                <button class="primary" id="incAccept">Принять</button>
+                <button class="ghost" id="incDecline">Отклонить</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ГЕЙТ: нужен аккаунт -->
     <div class="nl-modal show" id="loginGate">
@@ -593,10 +645,16 @@ body.light-theme .profile-status { color: #6a7090 !important; }
     }
 
     function pickFile() {
-        if (!current) return;
+        if (!current) { alert('Сначала выбери чат'); return; }
         var inp = document.createElement('input');
         inp.type = 'file';
-        inp.onchange = function () { if (inp.files && inp.files[0]) sendFile(inp.files[0]); };
+        inp.style.position = 'fixed';
+        inp.style.left = '-9999px';
+        document.body.appendChild(inp);
+        inp.onchange = function () {
+            if (inp.files && inp.files[0]) sendFile(inp.files[0]);
+            setTimeout(function () { inp.remove(); }, 500);
+        };
         inp.click();
     }
 
@@ -618,6 +676,139 @@ body.light-theme .profile-status { color: #6a7090 !important; }
             alert('Ошибка загрузки: ' + (e.message || e));
         }
     }
+
+    // ---------- ЗВОНКИ (WebRTC + Supabase) ----------
+    var pc = null, localStream = null, remoteAudio = null, callPeer = null, callTimer = null, callStart = 0, callTimeout = null, pendingOffer = null, callChannel = null;
+    var ICE_CONFIG = {
+        iceServers: [
+            { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+            { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+        ]
+    };
+
+    function initCallChannel() {
+        if (callChannel) return;
+        callChannel = sb.channel('nn_calls', { config: { broadcast: { self: false } } });
+        callChannel.on('broadcast', { event: 'rtc' }, function (m) {
+            var p = (m && m.payload) || {};
+            if (p.to !== myId) return;
+            handleSignal(p);
+        });
+        callChannel.subscribe();
+    }
+
+    function callSend(payload) {
+        if (!callChannel) initCallChannel();
+        try { callChannel.send({ type: 'broadcast', event: 'rtc', payload: payload }); } catch (_) {}
+    }
+
+    function createPeer() {
+        pc = new RTCPeerConnection(ICE_CONFIG);
+        pc.onicecandidate = function (e) { if (e.candidate) callSend({ type: 'ice', from: myId, to: callPeer, candidate: e.candidate }); };
+        pc.ontrack = function (e) {
+            if (!remoteAudio) { remoteAudio = new Audio(); remoteAudio.autoplay = true; }
+            remoteAudio.srcObject = e.streams[0];
+            remoteAudio.play().catch(function () {});
+        };
+        pc.onconnectionstatechange = function () {
+            if (!pc) return;
+            if (pc.connectionState === 'connected') { setCallStatus('Соединено'); startCallTimer(); }
+            else if (pc.connectionState === 'failed') { cleanupCall(); setCallStatus('Связь потеряна'); setTimeout(hideCallUI, 1600); }
+            else if (pc.connectionState === 'disconnected') { setCallStatus('Соединение прервано...'); }
+        };
+    }
+
+    async function handleSignal(p) {
+        if (p.type === 'offer') {
+            if (pc) { callSend({ type: 'busy', from: myId, to: p.from }); return; }
+            pendingOffer = p;
+            $('incName').textContent = (p.fromName || p.from) + ' звонит';
+            openModal('incomingModal');
+        } else if (p.type === 'answer') {
+            if (pc) { try { await pc.setRemoteDescription(p.sdp); } catch (_) {} }
+        } else if (p.type === 'ice') {
+            if (pc && p.candidate) { try { await pc.addIceCandidate(p.candidate); } catch (_) {} }
+        } else if (p.type === 'decline') {
+            cleanupCall(); showCallUI(p.fromName || p.from, 'Отклонён'); setTimeout(hideCallUI, 1600);
+        } else if (p.type === 'busy') {
+            cleanupCall(); showCallUI(p.fromName || p.from, 'Занято'); setTimeout(hideCallUI, 1600);
+        } else if (p.type === 'end') {
+            cleanupCall(); hideCallUI();
+        }
+    }
+
+    async function startCall() {
+        if (!current || current.type !== 'dm') { alert('Позвонить можно только в личном чате'); return; }
+        callPeer = current.peerId;
+        try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+        catch (e) { alert('Нет доступа к микрофону: ' + (e.message || e)); return; }
+        initCallChannel();
+        createPeer();
+        localStream.getTracks().forEach(function (t) { pc.addTrack(t, localStream); });
+        showCallUI(current.title, 'Вызываем...');
+        var off = await pc.createOffer({ offerToReceiveAudio: true });
+        await pc.setLocalDescription(off);
+        callSend({ type: 'offer', from: myId, fromName: myName, to: callPeer, sdp: pc.localDescription });
+        callTimeout = setTimeout(function () { if (pc && pc.connectionState !== 'connected') { cleanupCall(); setCallStatus('Нет ответа'); setTimeout(hideCallUI, 1600); } }, 45000);
+    }
+
+    async function acceptCall() {
+        closeModal('incomingModal');
+        if (!pendingOffer) return;
+        callPeer = pendingOffer.from;
+        try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+        catch (e) { alert('Нет доступа к микрофону'); callSend({ type: 'decline', from: myId, to: callPeer }); pendingOffer = null; return; }
+        createPeer();
+        localStream.getTracks().forEach(function (t) { pc.addTrack(t, localStream); });
+        try { await pc.setRemoteDescription(pendingOffer.sdp); } catch (_) {}
+        showCallUI(pendingOffer.fromName || pendingOffer.from, 'Соединение...');
+        var ans = await pc.createAnswer();
+        await pc.setLocalDescription(ans);
+        callSend({ type: 'answer', from: myId, to: callPeer, sdp: pc.localDescription });
+        pendingOffer = null;
+    }
+
+    function declineCall() {
+        closeModal('incomingModal');
+        if (pendingOffer) callSend({ type: 'decline', from: myId, to: pendingOffer.from });
+        pendingOffer = null;
+    }
+
+    function endCall() {
+        if (callPeer) callSend({ type: 'end', from: myId, to: callPeer });
+        cleanupCall();
+        hideCallUI();
+    }
+
+    function cleanupCall() {
+        if (callTimeout) { clearTimeout(callTimeout); callTimeout = null; }
+        if (pc) { try { pc.close(); } catch (_) {} pc = null; }
+        if (localStream) { localStream.getTracks().forEach(function (t) { t.stop(); }); localStream = null; }
+        if (remoteAudio) { remoteAudio.srcObject = null; remoteAudio = null; }
+        stopCallTimer();
+        callPeer = null;
+    }
+
+    function showCallUI(name, status) {
+        $('callName').textContent = name || '—';
+        $('callStatus').textContent = status || '';
+        $('callAv').textContent = (name || '?').charAt(0).toUpperCase();
+        $('callBar').classList.remove('hidden');
+    }
+    function hideCallUI() { $('callBar').classList.add('hidden'); }
+    function setCallStatus(s) { $('callStatus').textContent = s; }
+    function fmt2(n) { return (n < 10 ? '0' : '') + n; }
+    function startCallTimer() {
+        if (callTimer) return;
+        callStart = Date.now();
+        callTimer = setInterval(function () {
+            var s = Math.floor((Date.now() - callStart) / 1000);
+            setCallStatus('В звонке ' + fmt2(Math.floor(s / 60)) + ':' + fmt2(s % 60));
+        }, 1000);
+    }
+    function stopCallTimer() { if (callTimer) { clearInterval(callTimer); callTimer = null; } }
 
     // ---------- НАСТРОЙКИ ----------
     function showSettingsChatBlock(show) { $('settingsChatBlock').style.display = show ? 'block' : 'none'; }
@@ -797,6 +988,20 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         sendBtn.addEventListener('click', send);
         $('attachBtn').addEventListener('click', pickFile);
         input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+
+        initCallChannel();
+        $('callBtn').onclick = startCall;
+        $('callEnd').onclick = endCall;
+        $('callMic').onclick = function () {
+            if (!localStream) return;
+            var t = localStream.getAudioTracks()[0];
+            if (!t) return;
+            t.enabled = !t.enabled;
+            this.classList.toggle('muted', !t.enabled);
+            this.textContent = t.enabled ? '🎤' : '🔇';
+        };
+        $('incAccept').onclick = acceptCall;
+        $('incDecline').onclick = declineCall;
 
         $('addFriendBtn').onclick = function () { openModal('addModal'); };
         $('addCancel').onclick = function () { closeModal('addModal'); };
