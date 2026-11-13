@@ -8,6 +8,9 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js" defer></script>
+<script src="push.js" defer></script>
 <script src="app.js" defer></script><script src="notify.js" defer></script>
 
 <style>
@@ -746,6 +749,9 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         var off = await pc.createOffer({ offerToReceiveAudio: true });
         await pc.setLocalDescription(off);
         callSend({ type: 'offer', from: myId, fromName: myName, to: callPeer, sdp: pc.localDescription });
+        if (window.__nnPush && window.__nnPush.configured()) {
+            q(function () { return sb.functions.invoke('send-call-push', { body: { to: callPeer, fromName: myName } }); }).catch(function () {});
+        }
         callTimeout = setTimeout(function () { if (pc && pc.connectionState !== 'connected') { cleanupCall(); setCallStatus('Нет ответа'); setTimeout(hideCallUI, 1600); } }, 45000);
     }
 
@@ -984,6 +990,11 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
 
         initCallChannel();
+        if (window.__nnPush) {
+            window.__nnPush.requestPermission().then(function (token) {
+                if (token) { q(function () { return sb.from('profiles').update({ push_token: token }).eq('id', myId); }).catch(function () {}); }
+            });
+        }
         $('callBtn').onclick = startCall;
         $('callEnd').onclick = endCall;
         $('callMic').onclick = function () {

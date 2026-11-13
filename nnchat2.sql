@@ -62,3 +62,7 @@ create policy "chatfiles read" on storage.objects
 drop policy if exists "chatfiles insert" on storage.objects;
 create policy "chatfiles insert" on storage.objects
   for insert with check (bucket_id = 'chat-files');
+
+
+-- ===== push-токен для звонков =====
+alter table profiles add column if not exists push_token text;
