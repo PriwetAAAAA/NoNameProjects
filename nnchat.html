@@ -88,6 +88,16 @@ body.nnchat-page header {
 .chat-input-bar input:focus { border-color: rgba(168,85,247,.6); }
 .chat-input-bar button { min-height: 46px; padding: 0 20px; border-radius: 13px; border: none; cursor: pointer; background: linear-gradient(135deg,#5b8cff,#b46bff); color: #fff; font-weight: 700; font-size: 15px; flex-shrink: 0; box-shadow: 0 6px 20px rgba(124,58,237,.45), inset 0 1px 0 rgba(255,255,255,.25); }
 .chat-input-bar button:disabled { opacity: .4; cursor: not-allowed; }
+.chat-input-bar .attach {
+    width: 46px; min-width: 46px; padding: 0; font-size: 19px; line-height: 1;
+    background: rgba(255,255,255,.08) !important; color: #eef0ff !important;
+    border: 1px solid rgba(255,255,255,.12) !important; box-shadow: none !important;
+}
+.chat-input-bar .attach:hover { background: rgba(168,85,247,.25) !important; }
+.file-bubble { display: flex; flex-direction: column; gap: 8px; }
+.file-link { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; font-size: 14px; word-break: break-all; }
+.file-link:hover { text-decoration: underline; }
+.file-img { max-width: 280px; max-height: 280px; border-radius: 10px; display: block; }
 
 .people-toggle { display: none; }
 
@@ -238,6 +248,7 @@ body.light-theme .profile-status { color: #6a7090 !important; }
                     <div class="chat-empty" id="empty">Выбери друга или группу слева</div>
                 </div>
                 <div class="chat-input-bar">
+                    <button id="attachBtn" class="attach" title="Прикрепить файл">📎</button>
                     <input id="msgInput" type="text" placeholder="Сообщение..." autocomplete="off" enterkeyhint="send" maxlength="2000" disabled>
                     <button id="sendBtn" disabled>Отправить</button>
                 </div>
@@ -502,7 +513,25 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         who.textContent = mine ? 'Вы' : (m.sender_name || m.sender_id || 'Игрок');
         var b = document.createElement('div');
         b.className = 'bubble';
-        b.textContent = m.content;
+        if (m.content.indexOf('[[FILE]]') === 0) {
+            b.classList.add('file-bubble');
+            var rest = m.content.slice(8);
+            var sep = rest.indexOf('|');
+            var url = sep >= 0 ? rest.slice(0, sep) : rest;
+            var fname = sep >= 0 ? rest.slice(sep + 1) : 'файл';
+            var link = document.createElement('a');
+            link.className = 'file-link';
+            link.href = url; link.target = '_blank'; link.rel = 'noopener'; link.download = fname;
+            link.textContent = '📎 ' + fname;
+            b.appendChild(link);
+            if (/\.(png|jpe?g|gif|webp|bmp)$/i.test(fname)) {
+                var im = document.createElement('img');
+                im.className = 'file-img'; im.src = url; im.alt = fname;
+                b.appendChild(im);
+            }
+        } else {
+            b.textContent = m.content;
+        }
         wrap.appendChild(who); wrap.appendChild(b);
         msgs.appendChild(wrap);
         while (msgs.children.length > 300) msgs.removeChild(msgs.firstChild);
@@ -561,6 +590,33 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         input.value = '';
         q(function () { return sb.from('dm_messages').insert([{ conv: current.key, sender_id: myId, sender_name: myName, content: text }]); })
             .catch(function (e) { input.value = text; alert('Ошибка отправки: ' + (e.message || e)); });
+    }
+
+    function pickFile() {
+        if (!current) return;
+        var inp = document.createElement('input');
+        inp.type = 'file';
+        inp.onchange = function () { if (inp.files && inp.files[0]) sendFile(inp.files[0]); };
+        inp.click();
+    }
+
+    async function sendFile(file) {
+        if (!current || !file) return;
+        if (file.size > 25 * 1024 * 1024) { alert('Максимум 25 МБ'); return; }
+        var convNow = current.key;
+        try {
+            var safe = file.name.replace(/[^A-Za-z0-9_.\-]/g, '_');
+            var path = myId + '/' + Date.now() + '_' + safe;
+            var up = await sb.storage.from('chat-files').upload(path, file, { upsert: true });
+            if (up.error) throw up.error;
+            var pub = sb.storage.from('chat-files').getPublicUrl(path);
+            var url = pub.data.publicUrl;
+            await q(function () {
+                return sb.from('dm_messages').insert([{ conv: convNow, sender_id: myId, sender_name: myName, content: '[[FILE]]' + url + '|' + file.name }]);
+            });
+        } catch (e) {
+            alert('Ошибка загрузки: ' + (e.message || e));
+        }
     }
 
     // ---------- НАСТРОЙКИ ----------
@@ -739,6 +795,7 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         renderPeople();
 
         sendBtn.addEventListener('click', send);
+        $('attachBtn').addEventListener('click', pickFile);
         input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
 
         $('addFriendBtn').onclick = function () { openModal('addModal'); };

@@ -48,3 +48,17 @@ drop policy if exists "gm_all"   on group_members;
 create policy "prof_all" on profiles for all using (true) with check (true);
 create policy "grp_all"  on groups   for all using (true) with check (true);
 create policy "gm_all"   on group_members for all using (true) with check (true);
+
+
+-- ===== Storage for chat files =====
+insert into storage.buckets (id, name, public)
+values ('chat-files', 'chat-files', true)
+on conflict (id) do nothing;
+
+drop policy if exists "chatfiles read" on storage.objects;
+create policy "chatfiles read" on storage.objects
+  for select using (bucket_id = 'chat-files');
+
+drop policy if exists "chatfiles insert" on storage.objects;
+create policy "chatfiles insert" on storage.objects
+  for insert with check (bucket_id = 'chat-files');
