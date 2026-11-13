@@ -229,6 +229,11 @@ body.light-theme .profile-status { color: #6a7090 !important; }
 .call-btn:active { transform: scale(.93); }
 .call-btn.danger, .call-btn.muted { background: #ef4444; border-color: #ef4444; }
 @media (max-width: 640px) { .call-bar { left: 12px; right: 12px; bottom: 78px; min-width: 0; } }
+
+.audio-settings { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.audio-settings label { font-size: 11px; font-weight: 700; color: #7a80c0; text-transform: uppercase; letter-spacing: 1px; }
+.dev-select { width: 100%; min-height: 40px; padding: 0 12px; border-radius: 11px; background: rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.12); color: #eef0ff; font-size: 14px; outline: none; margin-bottom: 8px; }
+.dev-select:focus { border-color: rgba(168,85,247,.6); }
 </style>
 </head>
 <body class="nnchat-page">
@@ -270,7 +275,6 @@ body.light-theme .profile-status { color: #6a7090 !important; }
                         <h2 id="chatTitle">Выбери чат</h2>
                         <div class="sub" id="connText">Подключение...</div>
                     </div>
-                    <button class="gear" id="mailBtn" title="Почта">✉</button>
                     <button class="gear" id="callBtn" title="Позвонить">📞</button>
                 </div>
                 <div class="chat-msgs" id="msgs">
@@ -332,7 +336,13 @@ body.light-theme .profile-status { color: #6a7090 !important; }
     <div class="nl-modal" id="settingsModal">
         <div class="nl-card">
             <h3>Настройки</h3>
-            <p>Управление чатами и группами.</p>
+            <p>Управление чатами, группами и звуком звонков.</p>
+            <div class="audio-settings">
+                <label for="micSelect">Микрофон</label>
+                <select id="micSelect" class="dev-select"></select>
+                <label for="speakerSelect">Динамик</label>
+                <select id="speakerSelect" class="dev-select"></select>
+            </div>
             <div id="settingsChatBlock" style="display:none;margin-bottom:14px">
                 <button class="danger" id="deleteChatBtn">Удалить этот чат (у обоих)</button>
             </div>
@@ -359,22 +369,6 @@ body.light-theme .profile-status { color: #6a7090 !important; }
                 <button class="primary" id="profWrite">Написать</button>
                 <button class="ghost" id="profClose">Закрыть</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Почта -->
-    <div class="nl-modal" id="mailModal">
-        <div class="nl-card">
-            <h3>Привязать почту</h3>
-            <p>На почту придёт 4-значный код.</p>
-            <input id="mailEmail" type="email" placeholder="you@example.com" autocomplete="off">
-            <div class="row">
-                <button class="ghost" id="mailSendCode">Отправить код</button>
-                <button class="primary" id="mailConfirm">Подтвердить</button>
-            </div>
-            <input id="mailCode" type="text" inputmode="numeric" maxlength="4" placeholder="4-значный код" style="margin-top:10px;text-align:center;letter-spacing:8px;font-size:20px">
-            <div class="note" id="mailNote"></div>
-            <div class="close"><a id="mailCancel">Закрыть</a></div>
         </div>
     </div>
 
@@ -710,6 +704,7 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         pc.ontrack = function (e) {
             if (!remoteAudio) { remoteAudio = new Audio(); remoteAudio.autoplay = true; }
             remoteAudio.srcObject = e.streams[0];
+            if (selectedSpeaker) { try { remoteAudio.setSinkId(selectedSpeaker).catch(function () {}); } catch (_) {} }
             remoteAudio.play().catch(function () {});
         };
         pc.onconnectionstatechange = function () {
@@ -742,7 +737,7 @@ body.light-theme .profile-status { color: #6a7090 !important; }
     async function startCall() {
         if (!current || current.type !== 'dm') { alert('Позвонить можно только в личном чате'); return; }
         callPeer = current.peerId;
-        try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+        try { localStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraint() }); }
         catch (e) { alert('Нет доступа к микрофону: ' + (e.message || e)); return; }
         initCallChannel();
         createPeer();
@@ -758,7 +753,7 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         closeModal('incomingModal');
         if (!pendingOffer) return;
         callPeer = pendingOffer.from;
-        try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+        try { localStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraint() }); }
         catch (e) { alert('Нет доступа к микрофону'); callSend({ type: 'decline', from: myId, to: callPeer }); pendingOffer = null; return; }
         createPeer();
         localStream.getTracks().forEach(function (t) { pc.addTrack(t, localStream); });
@@ -809,6 +804,35 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         }, 1000);
     }
     function stopCallTimer() { if (callTimer) { clearInterval(callTimer); callTimer = null; } }
+
+    // ---------- ЗВУК: выбор устройств ----------
+    var selectedMic = localStorage.getItem('nn_mic') || '';
+    var selectedSpeaker = localStorage.getItem('nn_speaker') || '';
+
+    function audioConstraint() { return selectedMic ? { deviceId: selectedMic } : true; }
+
+    async function loadDevices() {
+        try {
+            var devices = await navigator.mediaDevices.enumerateDevices();
+            var micSel = $('micSelect'), spkSel = $('speakerSelect');
+            micSel.innerHTML = ''; spkSel.innerHTML = '';
+            devices.forEach(function (d) {
+                if (d.kind === 'audioinput') {
+                    var o = document.createElement('option');
+                    o.value = d.deviceId; o.textContent = d.label || ('Микрофон ' + (micSel.options.length + 1));
+                    micSel.appendChild(o);
+                } else if (d.kind === 'audiooutput') {
+                    var o2 = document.createElement('option');
+                    o2.value = d.deviceId; o2.textContent = d.label || ('Динамик ' + (spkSel.options.length + 1));
+                    spkSel.appendChild(o2);
+                }
+            });
+            if (!micSel.options.length) { var d0 = document.createElement('option'); d0.value = ''; d0.textContent = 'По умолчанию'; micSel.appendChild(d0); }
+            if (!spkSel.options.length) { var d1 = document.createElement('option'); d1.value = ''; d1.textContent = 'По умолчанию'; spkSel.appendChild(d1); }
+            if (selectedMic) { try { micSel.value = selectedMic; } catch (_) {} }
+            if (selectedSpeaker) { try { spkSel.value = selectedSpeaker; } catch (_) {} }
+        } catch (_) {}
+    }
 
     // ---------- НАСТРОЙКИ ----------
     function showSettingsChatBlock(show) { $('settingsChatBlock').style.display = show ? 'block' : 'none'; }
@@ -912,36 +936,6 @@ body.light-theme .profile-status { color: #6a7090 !important; }
             }).catch(function () {});
     }
 
-    // ---------- ПОЧТА ----------
-    function sendMailCode() {
-        var email = $('mailEmail').value.trim();
-        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('mailNote').textContent = 'Введи корректную почту'; return; }
-        var code = String(Math.floor(1000 + Math.random() * 9000));
-        pendingCode = { email: email, code: code };
-        function store() {
-            q(function () {
-                var exp = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-                return sb.from('email_codes').insert([{ owner_id: myId, email: email, code: code, purpose: 'link', expires_at: exp }]);
-            }).catch(function () {});
-        }
-        var ok = EMAILJS.publicKey && EMAILJS.serviceId && EMAILJS.templateId && window.emailjs;
-        if (ok) {
-            $('mailNote').textContent = 'Отправляю...';
-            window.emailjs.send(EMAILJS.serviceId, EMAILJS.templateId, { to_email: email, code: code, passcode: code, otp: code, time: new Date(Date.now() + 600000).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) })
-                .then(function () { store(); $('mailNote').textContent = 'Код отправлен на ' + email; })
-                .catch(function (e) { store(); $('mailNote').textContent = 'Не ушло: ' + ((e && (e.text || e.message)) || e) + ' (код ' + code + ')'; });
-        } else { store(); $('mailNote').textContent = 'Демо: код ' + code; }
-    }
-
-    function confirmMail() {
-        var code = $('mailCode').value.trim();
-        if (!pendingCode) { $('mailNote').textContent = 'Сначала отправь код'; return; }
-        if (code !== pendingCode.code) { $('mailNote').textContent = 'Неверный код'; return; }
-        q(function () { return sb.from('email_codes').update({ used: true }).eq('email', pendingCode.email).eq('code', code); })
-            .then(function () { $('mailNote').textContent = 'Почта привязана: ' + pendingCode.email; pendingCode = null; })
-            .catch(function (e) { $('mailNote').textContent = 'Ошибка: ' + (e.message || e); });
-    }
-
     // ---------- ИНИЦИАЛИЗАЦИЯ ----------
     function boot() {
         if (!window.supabase) { setTimeout(boot, 120); return; }
@@ -1007,18 +1001,15 @@ body.light-theme .profile-status { color: #6a7090 !important; }
         $('addCancel').onclick = function () { closeModal('addModal'); };
         $('addFriendOk').onclick = addFriend;
 
-        $('settingsBtn').onclick = function () { renderGroupMembers(); openModal('settingsModal'); };
+        $('settingsBtn').onclick = function () { renderGroupMembers(); loadDevices(); openModal('settingsModal'); };
         $('settingsCancel').onclick = function () { closeModal('settingsModal'); };
+        $('micSelect').onchange = function () { selectedMic = this.value; localStorage.setItem('nn_mic', selectedMic); };
+        $('speakerSelect').onchange = function () { selectedSpeaker = this.value; localStorage.setItem('nn_speaker', selectedSpeaker); };
         $('deleteChatBtn').onclick = deleteChat;
         $('createGroupBtn').onclick = createGroup;
 
         $('profClose').onclick = function () { closeModal('profileModal'); };
         $('profWrite').onclick = function () { closeModal('profileModal'); };
-
-        $('mailBtn').onclick = function () { openModal('mailModal'); };
-        $('mailCancel').onclick = function () { closeModal('mailModal'); };
-        $('mailSendCode').onclick = sendMailCode;
-        $('mailConfirm').onclick = confirmMail;
 
         $('peopleToggle').onclick = function () { document.body.classList.toggle('people-open'); };
         $('peopleBackdrop').onclick = function () { document.body.classList.remove('people-open'); };
