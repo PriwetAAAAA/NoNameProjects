@@ -552,6 +552,56 @@ function getCurrentUser() {
     }
 }
 
+// ===== время на сайте (профиль) =====
+function fmtSiteTime(sec) {
+    sec = Math.max(0, Math.floor(sec || 0));
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+    return (h > 0 ? h + ' ч ' : '') + m + ' мин';
+}
+
+function syncTimeSpent() {
+    try {
+        var u = getCurrentUser();
+        if (!u || !u.id) return;
+        var client = getSupabaseClient();
+        if (!client) return;
+        var local = parseFloat(localStorage.getItem('nn_time_total') || '0') || 0;
+        var synced = parseFloat(localStorage.getItem('nn_time_synced') || '0') || 0;
+        var delta = Math.floor(local - synced);
+        if (delta < 1) return;
+        client.from('profiles').select('time_spent').eq('id', u.id).maybeSingle().then(function (r) {
+            var server = (r.data && r.data.time_spent) || 0;
+            var newTotal = server + delta;
+            return client.from('profiles').upsert({ id: u.id, name: u.name || u.id, time_spent: newTotal, last_seen: new Date().toISOString() }).then(function () {
+                localStorage.setItem('nn_time_synced', String(local));
+                localStorage.setItem('nn_time_server', String(newTotal));
+            });
+        }).catch(function () {});
+    } catch (e) {}
+}
+
+function updateProfileTime() {
+    var el = document.getElementById('profile-modal-time');
+    var hideBtn = document.getElementById('profile-modal-time-hide');
+    if (!el) return;
+    var hidden = localStorage.getItem('nn_hide_time') === '1';
+    if (hideBtn) hideBtn.textContent = hidden ? '🙉' : '🙈';
+    if (hidden) { el.textContent = 'скрыто'; el.classList.add('unavailable'); return; }
+    el.classList.remove('unavailable');
+    el.textContent = '…';
+    var u = getCurrentUser();
+    var client = getSupabaseClient();
+    if (!u || !u.id || !client) { el.textContent = '—'; return; }
+    var local = parseFloat(localStorage.getItem('nn_time_total') || '0') || 0;
+    var synced = parseFloat(localStorage.getItem('nn_time_synced') || '0') || 0;
+    client.from('profiles').select('time_spent').eq('id', u.id).maybeSingle().then(function (r) {
+        var server = (r.data && r.data.time_spent) || 0;
+        el.textContent = fmtSiteTime(server + Math.max(0, local - synced));
+    }).catch(function () {
+        el.textContent = fmtSiteTime(Math.max(0, local - synced));
+    });
+}
+
 function createProfileModal() {
     if (document.getElementById('profile-modal')) return;
 
@@ -728,6 +778,14 @@ function createProfileModal() {
                     <button type="button" id="profile-modal-eye" class="profile-modal-eye" title="Показать пароль" aria-label="Показать пароль">👁️</button>
                 </div>
             </div>
+            <div class="profile-modal-section">
+                <h3 class="profile-modal-section-title">Активность</h3>
+                <div class="profile-modal-row">
+                    <span class="profile-modal-row-label">На сайте</span>
+                    <span id="profile-modal-time" class="profile-modal-row-value">—</span>
+                    <button type="button" id="profile-modal-time-hide" class="profile-modal-eye" title="Скрыть время" aria-label="Скрыть время">🙈</button>
+                </div>
+            </div>
             <button type="button" id="profile-modal-logout" class="profile-modal-logout">Выйти из аккаунта</button>
         </div>
     `;
@@ -766,6 +824,7 @@ function openProfileModal() {
 
     // Показываем меню: класс .is-active запускает CSS-анимации
     // (плавный блюр подложки + всплытие окна со scale)
+    updateProfileTime();
     overlay.classList.add('is-active');
 
     // Пароль берём из Supabase; если не вышло — из сессии localStorage
@@ -869,6 +928,12 @@ function initProfileMenu() {
     document.getElementById('profile-modal-close').addEventListener('click', closeProfileModal);
     document.getElementById('profile-modal-logout').addEventListener('click', handleProfileLogout);
     document.getElementById('profile-modal-eye').addEventListener('click', toggleProfilePassword);
+    var th = document.getElementById('profile-modal-time-hide');
+    if (th) th.addEventListener('click', function () {
+        var hidden = localStorage.getItem('nn_hide_time') === '1';
+        localStorage.setItem('nn_hide_time', hidden ? '0' : '1');
+        updateProfileTime();
+    });
 
     // Закрытие кликом по затемнению и клавишей Escape
     const overlay = document.getElementById('profile-modal');
@@ -1117,5 +1182,9 @@ function initCryptoLayerChat() {
         document.addEventListener('visibilitychange', flush);
         window.addEventListener('pagehide', flush);
         window.addEventListener('beforeunload', flush);
+        // синхронизация времени с сервером
+        setTimeout(function () { try { syncTimeSpent(); } catch (_) {} }, 5000);
+        setInterval(function () { try { syncTimeSpent(); } catch (_) {} }, 60000);
+        document.addEventListener('visibilitychange', function () { try { syncTimeSpent(); } catch (_) {} });
     } catch (_) {}
 })();

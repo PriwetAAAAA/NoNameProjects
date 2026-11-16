@@ -66,3 +66,8 @@ create policy "chatfiles insert" on storage.objects
 
 -- ===== push-токен для звонков =====
 alter table profiles add column if not exists push_token text;
+
+
+-- ===== недостающие колонки profiles =====
+alter table profiles add column if not exists avatar text;
+alter table profiles add column if not exists time_spent bigint default 0;
