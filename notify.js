@@ -108,8 +108,23 @@
         } catch (_) {}
     }
 
+    function systemNotify(text) {
+        try {
+            if (window.NativeNotify && window.NativeNotify.notify) {
+                window.NativeNotify.notify('NoName Chatter', text);
+                return;
+            }
+        } catch (_) {}
+        try {
+            if (window.Notification && Notification.permission === 'granted') {
+                new Notification('NoName Chatter', { body: text, icon: 'mascot.png' });
+            }
+        } catch (_) {}
+    }
+
     function notify(text) {
         if (document.hidden || document.visibilityState === 'hidden') {
+            systemNotify(text);
             playSound();
         } else {
             showToast(text);

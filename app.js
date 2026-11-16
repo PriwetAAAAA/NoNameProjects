@@ -1100,3 +1100,22 @@ function initCryptoLayerChat() {
         });
     }
 }
+
+// ===== трекинг времени на сайте =====
+(function () {
+    try {
+        var KEY = 'nn_time_total';
+        var total = parseFloat(localStorage.getItem(KEY) || '0') || 0;
+        var last = Date.now();
+        function flush() {
+            var now = Date.now();
+            total += (now - last) / 1000;
+            last = now;
+            try { localStorage.setItem(KEY, String(total)); } catch (_) {}
+        }
+        setInterval(flush, 15000);
+        document.addEventListener('visibilitychange', flush);
+        window.addEventListener('pagehide', flush);
+        window.addEventListener('beforeunload', flush);
+    } catch (_) {}
+})();

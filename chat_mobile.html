@@ -173,6 +173,19 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
 .audio-settings label { font-size: 11px; font-weight: 700; color: #7a80c0; text-transform: uppercase; letter-spacing: 1px; }
 .dev-select { width: 100%; min-height: 40px; padding: 0 12px; border-radius: 11px; background: rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.12); color: #eef0ff; font-size: 14px; outline: none; margin-bottom: 8px; }
 .dev-select:focus { border-color: rgba(168,85,247,.6); }
+
+.avatar-settings { margin-bottom: 14px; }
+.avatar-settings label, .time-toggle { font-size: 11px; font-weight: 700; color: #7a80c0; text-transform: uppercase; letter-spacing: 1px; }
+.avatar-settings label { display: block; margin-bottom: 6px; }
+.av-row { display: flex; align-items: center; gap: 10px; }
+.av-preview { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
+    background: linear-gradient(135deg,#4d7cff,#a855f7); display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 18px; }
+.av-preview img, .av-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.time-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.time-row span { font-size: 13px; color: #a6adf0; }
+.time-toggle { display: flex; align-items: center; gap: 6px; text-transform: none; letter-spacing: 0; cursor: pointer; }
+.time-toggle input { width: 16px; height: 16px; }
 </style>
 </head>
 <body class="mobile-chat">
@@ -251,11 +264,22 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
         <div class="nl-card">
             <h3>Настройки</h3>
             <p>Управление чатами, группами и звуком звонков.</p>
+            <div class="avatar-settings">
+                <label>Аватар</label>
+                <div class="av-row">
+                    <div id="avPreview" class="av-preview">?</div>
+                    <button class="ghost" id="avPick">Загрузить</button>
+                </div>
+            </div>
             <div class="audio-settings">
                 <label for="micSelect">Микрофон</label>
                 <select id="micSelect" class="dev-select"></select>
                 <label for="speakerSelect">Динамик</label>
                 <select id="speakerSelect" class="dev-select"></select>
+            </div>
+            <div class="time-row">
+                <span id="timeSpent">Проведено на сайте: —</span>
+                <label class="time-toggle"><input type="checkbox" id="hideTime"> Скрыть</label>
             </div>
             <div id="settingsChatBlock" style="display:none;margin-bottom:14px">
                 <button class="danger" id="deleteChatBtn">Удалить этот чат (у обоих)</button>
@@ -330,7 +354,7 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
             row.className = 'person' + (current && current.type === 'dm' && current.key === convKey(f.id) ? ' active' : '');
             var main = document.createElement('button');
             main.className = 'person-main';
-            main.innerHTML = '<span class="av">' + initial(f.name) + '<span class="on"></span></span><span class="nm"></span>';
+            main.innerHTML = '<span class="av">' + (avatars[f.id] ? '<img class="av-img" src="' + avatars[f.id] + '" alt="">' : initial(f.name)) + '<span class="on"></span></span><span class="nm"></span>';
             main.querySelector('.nm').textContent = f.name || f.id;
             if (onlineIds[f.id]) main.querySelector('.on').classList.add('live');
             main.onclick = function () { openDm(f); };
@@ -369,7 +393,7 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
 
     function loadFriends() {
         q(function () { return sb.from('friendships').select('*').or('a_id.eq.' + myId + ',b_id.eq.' + myId); })
-            .then(function (r) { friends = (r.data || []).map(function (f) { return { id: f.a_id === myId ? f.b_id : f.a_id, name: f.a_id === myId ? (f.b_name || f.b_id) : (f.a_name || f.a_id) }; }); renderPeople(); }).catch(function () {});
+            .then(function (r) { friends = (r.data || []).map(function (f) { return { id: f.a_id === myId ? f.b_id : f.a_id, name: f.a_id === myId ? (f.b_name || f.b_id) : (f.a_name || f.a_id) }; }); renderPeople(); loadAvatars(); }).catch(function () {});
     }
     function loadPending() {
         q(function () { return sb.from('friend_requests').select('*').eq('to_id', myId).eq('status', 'pending'); })
@@ -670,6 +694,76 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
         } catch (_) {}
     }
 
+    // ---------- АВАТАР ----------
+    var avatars = {};
+
+    function loadAvatars() {
+        var ids = friends.map(function (f) { return f.id; });
+        ids.push(myId);
+        q(function () { return sb.from('profiles').select('id,avatar').in('id', ids); })
+            .then(function (r) {
+                avatars = {};
+                (r.data || []).forEach(function (p) { if (p.avatar) avatars[p.id] = p.avatar; });
+                if ($('avPreview')) {
+                    var mine = avatars[myId];
+                    $('avPreview').innerHTML = mine ? '<img src="' + mine + '" alt="">' : (myName || '?').charAt(0).toUpperCase();
+                }
+                renderPeople();
+            }).catch(function () {});
+    }
+
+    function pickAvatar() {
+        var inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'image/*';
+        inp.onchange = function () { if (inp.files && inp.files[0]) uploadAvatar(inp.files[0]); };
+        inp.click();
+    }
+
+    function uploadAvatar(file) {
+        if (file.size > 8 * 1024 * 1024) { alert('Картинка до 8 МБ'); return; }
+        var reader = new FileReader();
+        reader.onload = function () {
+            var img = new Image();
+            img.onload = function () {
+                var c = document.createElement('canvas');
+                c.width = c.height = 128;
+                var ctx = c.getContext('2d');
+                var s = Math.min(img.width, img.height);
+                ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 128, 128);
+                saveAvatar(c.toDataURL('image/jpeg', 0.82));
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function saveAvatar(url) {
+        q(function () { return sb.from('profiles').upsert({ id: myId, name: myName, avatar: url, last_seen: new Date().toISOString() }); })
+            .then(function () {
+                var u = JSON.parse(localStorage.getItem('steam_user') || '{}');
+                u.avatar = url; localStorage.setItem('steam_user', JSON.stringify(u));
+                avatars[myId] = url;
+                if ($('avPreview')) $('avPreview').innerHTML = '<img src="' + url + '" alt="">';
+                loadAvatars();
+            }).catch(function (e) { alert('Ошибка: ' + (e.message || e)); });
+    }
+
+    // ---------- ВРЕМЯ НА САЙТЕ ----------
+    function fmtTime(sec) {
+        var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+        return (h > 0 ? h + ' ч ' : '') + m + ' мин';
+    }
+    function updateTimeSpent() {
+        var el = $('timeSpent');
+        if (!el) return;
+        var hide = localStorage.getItem('nn_hide_time') === '1';
+        if ($('hideTime')) $('hideTime').checked = hide;
+        if (hide) { el.style.display = 'none'; el.textContent = ''; return; }
+        el.style.display = '';
+        var sec = parseFloat(localStorage.getItem('nn_time_total') || '0') || 0;
+        el.textContent = 'Проведено на сайте: ' + fmtTime(sec);
+    }
+
     function deleteChat() {
         if (!current || current.type !== 'dm') return;
         if (!confirm('Удалить чат для ОБОИХ?')) return;
@@ -784,10 +878,12 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
         $('addCancel').onclick = function () { closeModal('addModal'); };
         $('addFriendOk').onclick = addFriend;
 
-        $('settingsBtn').onclick = function () { document.body.classList.remove('menu-open'); renderGroupMembers(); loadDevices(); openModal('settingsModal'); };
+        $('settingsBtn').onclick = function () { document.body.classList.remove('menu-open'); renderGroupMembers(); loadDevices(); loadAvatars(); updateTimeSpent(); openModal('settingsModal'); };
         $('settingsCancel').onclick = function () { closeModal('settingsModal'); };
         $('micSelect').onchange = function () { selectedMic = this.value; localStorage.setItem('nn_mic', selectedMic); };
         $('speakerSelect').onchange = function () { selectedSpeaker = this.value; localStorage.setItem('nn_speaker', selectedSpeaker); };
+        $('avPick').onclick = pickAvatar;
+        $('hideTime').onchange = function () { localStorage.setItem('nn_hide_time', this.checked ? '1' : '0'); updateTimeSpent(); };
         $('deleteChatBtn').onclick = deleteChat;
         $('deleteGroupBtn').onclick = deleteGroup;
         $('leaveGroupBtn').onclick = leaveGroup;
