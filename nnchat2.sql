@@ -71,3 +71,12 @@ alter table profiles add column if not exists push_token text;
 -- ===== недостающие колонки profiles =====
 alter table profiles add column if not exists avatar text;
 alter table profiles add column if not exists time_spent bigint default 0;
+
+
+-- ===== ПОЛНЫЙ набор колонок profiles (безопасно: добавит недостающие) =====
+alter table profiles add column if not exists name text;
+alter table profiles add column if not exists avatar text;
+alter table profiles add column if not exists email text;
+alter table profiles add column if not exists push_token text;
+alter table profiles add column if not exists time_spent bigint default 0;
+alter table profiles add column if not exists last_seen timestamptz default now();
