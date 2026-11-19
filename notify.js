@@ -9,6 +9,16 @@
     var myId = '';
     var toastEl = null;
 
+    // разрешение на системные уведомления запрашиваем по первому клику (требование Chrome)
+    function askNotifPermission() {
+        try {
+            if (!('Notification' in window)) return;
+            if (Notification.permission !== 'default') return;
+            Notification.requestPermission();
+        } catch (_) {}
+    }
+    document.addEventListener('click', askNotifPermission, { once: true, capture: true });
+
     function openAppModal() {
         if (document.getElementById('nn-app-modal')) return;
         var ov = document.createElement('div');
