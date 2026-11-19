@@ -143,9 +143,14 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
       <button class="chip on" data-style="classic">Классика</button>
       <button class="chip" data-style="vhs">VHS</button>
       <button class="chip" data-style="fried">Прожарка</button>
-      <button class="chip" data-style="bit8">8-бит</button>
-      <button class="chip" data-style="potato">Картошка</button>
+      <button class="chip" data-style="ascii">ASCII</button>
+      <button class="chip" data-style="halftone">Газета</button>
+      <button class="chip" data-style="heat">Тепловизор</button>
       <button class="chip" data-style="glitch">Глитч</button>
+      <button class="chip" data-style="negative">Негатив</button>
+      <button class="chip" data-style="kaleido">Калейдоскоп</button>
+      <button class="chip" data-style="wave">Волна</button>
+      <button class="chip" data-style="bit8">Пиксель-арт</button>
       <button class="chip" data-style="mono">Моно</button>
     </div>
     <button class="go" id="go">ШАКАЛИЗИРОВАТЬ</button>
@@ -182,13 +187,18 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
 
     var DESCS = ['', 'почти нормально', 'лёгкий шакал', 'шакал просыпается', 'шакал набирает силу', 'умеренный шакал', 'чёткий шакал', 'жёсткий шакал', 'шакал-мама', 'тотальный шакал', 'ШАКАЛ БОГ'];
     var STYLES = {
-        classic: { name: 'Классика', noise: 0, poster: 0, sat: 1, con: 1, gray: 0, scan: 0, slice: 0, rgbShift: 0 },
-        vhs:     { name: 'VHS', noise: 16, poster: 0, sat: 1.15, con: 1.05, gray: 0, scan: 2, slice: 0, rgbShift: 2, extraQ: 0.01 },
-        fried:   { name: 'Прожарка', noise: 24, poster: 0, sat: 2.8, con: 2.0, gray: 0, scan: 0, slice: 0, rgbShift: 1 },
-        bit8:    { name: '8-бит', noise: 0, poster: 16, sat: 1.5, con: 1.25, gray: 0, scan: 0, slice: 0, rgbShift: 0 },
-        potato:  { name: 'Картошка', noise: 6, poster: 0, sat: 1.1, con: 1.05, gray: 0, scan: 0, slice: 0, rgbShift: 0, extraDiv: 3, extraQ: 0.02 },
-        glitch:  { name: 'Глитч', noise: 8, poster: 0, sat: 1.35, con: 1.2, gray: 0, scan: 0, slice: 14, rgbShift: 5 },
-        mono:    { name: 'Моно', noise: 8, poster: 0, sat: 1, con: 1.3, gray: 1, scan: 0, slice: 0, rgbShift: 0 }
+        classic:  { name: 'Классика' },
+        vhs:      { name: 'VHS', rgbShift: 3, scan: 2, track: 1, wobble: 2, sat: 1.15, con: 1.05, extraQ: 0.01 },
+        fried:    { name: 'Прожарка', sat: 3.2, con: 2.1, noise: 22, red: 22, vignette: 0.55 },
+        ascii:    { name: 'ASCII', kind: 'ascii' },
+        halftone: { name: 'Газета', kind: 'halftone' },
+        heat:     { name: 'Тепловизор', kind: 'heat' },
+        glitch:   { name: 'Глитч', rgbShift: 6, slice: 18, blocks: 10, sat: 1.3, con: 1.2 },
+        negative: { name: 'Негатив', kind: 'negative' },
+        kaleido:  { name: 'Калейдоскоп', kind: 'kaleido' },
+        wave:     { name: 'Волна', kind: 'wave', amp: 3 },
+        bit8:     { name: 'Пиксель-арт', poster: 8, sat: 1.7, con: 1.2 },
+        mono:     { name: 'Моно', gray: 1, con: 1.35, noise: 8 }
     };
     var currentStyle = 'classic';
 
@@ -268,24 +278,9 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             img.onerror = function () { reject(new Error('Не удалось открыть картинку')); };
             img.onload = function () {
                 var st = STYLES[currentStyle] || STYLES.classic;
-                var div = 2 + level * 3 + (st.extraDiv || 0);
-                var w = Math.max(8, Math.floor(img.width / div));
-                var h = Math.max(8, Math.floor(img.height / div));
-
-                var small = document.createElement('canvas');
-                small.width = w; small.height = h;
-                var sctx = small.getContext('2d');
-                sctx.drawImage(img, 0, 0, w, h);
-                applyPixelStyle(sctx, w, h, st, level);
-
-                // растягиваем обратно до исходных размеров — пиксели, но не «далеко»
-                var c = document.createElement('canvas');
-                c.width = img.width; c.height = img.height;
-                var ctx = c.getContext('2d');
-                ctx.imageSmoothingEnabled = false;
-                ctx.drawImage(small, 0, 0, w, h, 0, 0, img.width, img.height);
-                applyBigStyle(ctx, c.width, c.height, st, level);
-
+                var c;
+                try { c = renderByStyle(img, st, level); }
+                catch (e) { reject(e); return; }
                 var quality = Math.max(0.01, 0.06 - level * 0.005 - (st.extraQ || 0));
                 c.toBlob(function (b) {
                     if (b) resolve({ kind: 'image', blob: b });
@@ -297,15 +292,18 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     }
 
     function applyPixelStyle(ctx, w, h, st, level) {
-        if (!st.noise && !st.poster && st.sat === 1 && st.con === 1 && !st.gray && !st.rgbShift) return;
-        var id = ctx.getImageData(0, 0, w, h);
-        var d = id.data;
+        var sat = st.sat || 1, con = st.con || 1;
         var noise = st.noise ? st.noise * (0.5 + level * 0.08) : 0;
         var poster = st.poster || 0;
-        var sat = st.sat, con = st.con, gray = st.gray;
+        var gray = st.gray || 0;
+        var red = st.red || 0;
+        if (!noise && !poster && sat === 1 && con === 1 && !gray && !st.rgbShift && !red) return;
+        var id = ctx.getImageData(0, 0, w, h);
+        var d = id.data;
         for (var i = 0; i < d.length; i += 4) {
             var r = d[i], g = d[i + 1], b = d[i + 2];
             if (noise) { var n = (Math.random() - 0.5) * noise * 2; r += n; g += n; b += n; }
+            if (red) { r += red; }
             if (gray) { var l = r * 0.299 + g * 0.587 + b * 0.114; r = l; g = l; b = l; }
             if (sat !== 1 || con !== 1) {
                 var l2 = r * 0.299 + g * 0.587 + b * 0.114;
@@ -313,8 +311,8 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
                 r = (r - 128) * con + 128; g = (g - 128) * con + 128; b = (b - 128) * con + 128;
             }
             if (poster) {
-                var pstep = 256 / poster;
-                r = Math.round(r / pstep) * pstep; g = Math.round(g / pstep) * pstep; b = Math.round(b / pstep) * pstep;
+                var ps = 256 / poster;
+                r = Math.round(r / ps) * ps; g = Math.round(g / ps) * ps; b = Math.round(b / ps) * ps;
             }
             d[i] = r; d[i + 1] = g; d[i + 2] = b;
         }
@@ -335,20 +333,194 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     }
 
     function applyBigStyle(ctx, W, H, st, level) {
+        if (st.wobble) {
+            var amp = st.wobble * (0.6 + level * 0.1);
+            var src = document.createElement('canvas');
+            src.width = W; src.height = H;
+            src.getContext('2d').drawImage(ctx.canvas, 0, 0);
+            for (var yy = 0; yy < H; yy += 2) {
+                var dx = Math.sin(yy / 16) * amp;
+                ctx.drawImage(src, 0, yy, W, 2, dx, yy, W, 2);
+            }
+        }
         if (st.scan) {
             var step = Math.max(2, Math.round(4 - level * 0.2));
             ctx.fillStyle = 'rgba(0,0,0,' + (0.18 + level * 0.015).toFixed(3) + ')';
             for (var y = 0; y < H; y += step) ctx.fillRect(0, y, W, 1);
         }
+        if (st.track) {
+            for (var k = 0; k < 3 + level; k++) {
+                ctx.fillStyle = 'rgba(255,255,255,' + (0.07 + Math.random() * 0.1).toFixed(3) + ')';
+                ctx.fillRect(0, Math.random() * H, W, 1 + Math.random() * 2);
+            }
+        }
         if (st.slice) {
             var cnt = 4 + level;
-            for (var k = 0; k < cnt; k++) {
+            for (var k2 = 0; k2 < cnt; k2++) {
                 var sy = Math.random() * H;
                 var shh = Math.max(2, Math.random() * (H / 14));
                 var off = (Math.random() - 0.5) * st.slice * (0.6 + level * 0.1) * 2;
                 try { ctx.drawImage(ctx.canvas, 0, sy, W, shh, off, sy, W, shh); } catch (_) {}
             }
         }
+        if (st.vignette) {
+            var g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.72);
+            g.addColorStop(0, 'rgba(0,0,0,0)');
+            g.addColorStop(1, 'rgba(0,0,0,' + st.vignette + ')');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, W, H);
+        }
+    }
+
+    function renderByStyle(img, st, level) {
+        if (st.kind === 'ascii') return renderAscii(img);
+        if (st.kind === 'halftone') return renderHalftone(img);
+        if (st.kind === 'heat') return renderHeat(img);
+        if (st.kind === 'negative') return renderNegative(img);
+        if (st.kind === 'kaleido') return renderKaleido(img);
+        if (st.kind === 'wave') return renderWave(img, level, st);
+        return renderShakal(img, st, level);
+    }
+
+    function newCanvas(img) {
+        var c = document.createElement('canvas');
+        c.width = img.width || img.naturalWidth;
+        c.height = img.height || img.naturalHeight;
+        return c;
+    }
+
+    function renderShakal(img, st, level) {
+        var div = 2 + level * 3 + (st.extraDiv || 0);
+        var w = Math.max(8, Math.floor(img.width / div));
+        var h = Math.max(8, Math.floor(img.height / div));
+        var small = document.createElement('canvas');
+        small.width = w; small.height = h;
+        var sctx = small.getContext('2d');
+        sctx.drawImage(img, 0, 0, w, h);
+        applyPixelStyle(sctx, w, h, st, level);
+        var c = newCanvas(img);
+        var ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(small, 0, 0, w, h, 0, 0, c.width, c.height);
+        applyBigStyle(ctx, c.width, c.height, st, level);
+        return c;
+    }
+
+    function renderAscii(img) {
+        var c = newCanvas(img);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#05010a'; ctx.fillRect(0, 0, c.width, c.height);
+        var cols = Math.min(150, Math.max(60, Math.round(c.width / 12)));
+        var rows = Math.max(10, Math.round(cols * c.height / c.width * 0.55));
+        var s = document.createElement('canvas');
+        s.width = cols; s.height = rows;
+        var sctx = s.getContext('2d');
+        sctx.drawImage(img, 0, 0, cols, rows);
+        var d = sctx.getImageData(0, 0, cols, rows).data;
+        var chars = ' .:-=+*#%@';
+        var cw = c.width / cols, ch = c.height / rows;
+        ctx.font = '900 ' + Math.max(5, Math.round(ch * 1.5)) + 'px monospace';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#7cffb2';
+        for (var y = 0; y < rows; y++) {
+            for (var x = 0; x < cols; x++) {
+                var i = (y * cols + x) * 4;
+                var l = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) / 255;
+                var idx = Math.max(0, Math.min(chars.length - 1, Math.round((1 - l) * (chars.length - 1))));
+                if (chars[idx] === ' ') continue;
+                ctx.fillText(chars[idx], x * cw, y * ch);
+            }
+        }
+        return c;
+    }
+
+    function renderHalftone(img) {
+        var c = newCanvas(img);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#f4f1e8'; ctx.fillRect(0, 0, c.width, c.height);
+        var cols = Math.min(130, Math.max(40, Math.round(c.width / 16)));
+        var rows = Math.max(10, Math.round(cols * c.height / c.width));
+        var s = document.createElement('canvas');
+        s.width = cols; s.height = rows;
+        var sctx = s.getContext('2d');
+        sctx.drawImage(img, 0, 0, cols, rows);
+        var d = sctx.getImageData(0, 0, cols, rows).data;
+        var cw = c.width / cols, ch = c.height / rows;
+        ctx.fillStyle = '#111111';
+        for (var y = 0; y < rows; y++) {
+            for (var x = 0; x < cols; x++) {
+                var i = (y * cols + x) * 4;
+                var l = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) / 255;
+                var r2 = (1 - l) * Math.min(cw, ch) * 0.62;
+                if (r2 < 0.35) continue;
+                ctx.beginPath();
+                ctx.arc(x * cw + cw / 2, y * ch + ch / 2, r2, 0, 6.2832);
+                ctx.fill();
+            }
+        }
+        return c;
+    }
+
+    function renderHeat(img) {
+        var c = newCanvas(img);
+        var ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        var id = ctx.getImageData(0, 0, c.width, c.height);
+        var d = id.data;
+        var PAL = [[8, 4, 30], [40, 0, 90], [130, 0, 130], [220, 30, 60], [255, 140, 0], [255, 240, 100], [255, 255, 255]];
+        for (var i = 0; i < d.length; i += 4) {
+            var l = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) / 255;
+            var p = l * (PAL.length - 1);
+            var i0 = Math.floor(p), i1 = Math.min(PAL.length - 1, i0 + 1), f = p - i0;
+            d[i] = PAL[i0][0] + (PAL[i1][0] - PAL[i0][0]) * f;
+            d[i + 1] = PAL[i0][1] + (PAL[i1][1] - PAL[i0][1]) * f;
+            d[i + 2] = PAL[i0][2] + (PAL[i1][2] - PAL[i0][2]) * f;
+        }
+        ctx.putImageData(id, 0, 0);
+        return c;
+    }
+
+    function renderNegative(img) {
+        var c = newCanvas(img);
+        var ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        var id = ctx.getImageData(0, 0, c.width, c.height);
+        var d = id.data;
+        for (var i = 0; i < d.length; i += 4) {
+            d[i] = 255 - d[i]; d[i + 1] = 255 - d[i + 1]; d[i + 2] = 255 - d[i + 2];
+        }
+        ctx.putImageData(id, 0, 0);
+        return c;
+    }
+
+    function renderKaleido(img) {
+        var c = newCanvas(img);
+        var ctx = c.getContext('2d');
+        var hw = Math.max(1, Math.floor(c.width / 2));
+        var hh = Math.max(1, Math.floor(c.height / 2));
+        var s = document.createElement('canvas');
+        s.width = hw; s.height = hh;
+        s.getContext('2d').drawImage(img, 0, 0, hw, hh, 0, 0, hw, hh);
+        ctx.drawImage(s, 0, 0);
+        ctx.save(); ctx.translate(c.width, 0); ctx.scale(-1, 1); ctx.drawImage(s, 0, 0); ctx.restore();
+        ctx.save(); ctx.translate(0, c.height); ctx.scale(1, -1); ctx.drawImage(s, 0, 0); ctx.restore();
+        ctx.save(); ctx.translate(c.width, c.height); ctx.scale(-1, -1); ctx.drawImage(s, 0, 0); ctx.restore();
+        return c;
+    }
+
+    function renderWave(img, level, st) {
+        var c = newCanvas(img);
+        var ctx = c.getContext('2d');
+        var W = c.width, H = c.height;
+        var src = document.createElement('canvas');
+        src.width = W; src.height = H;
+        src.getContext('2d').drawImage(img, 0, 0);
+        var amp = (st.amp || 3) * (1 + level * 0.4);
+        for (var y = 0; y < H; y++) {
+            var dx = Math.sin(y / 22) * amp;
+            ctx.drawImage(src, 0, y, W, 1, dx, y, W, 1);
+        }
+        return c;
     }
 
     function dataURLtoBlob(d) {
