@@ -79,6 +79,11 @@ main{position:relative;z-index:5;max-width:900px;margin:0 auto;padding:0 16px 10
 input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
 #qLabel{color:#ffe600;font-size:26px;text-shadow:2px 2px 0 #000}
 .emoji-row{font-size:13px;color:#8f7cc0;font-weight:700;margin:-8px 0 16px}
+.styles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 20px}
+.chip{font:inherit;font-size:14px;font-weight:800;padding:9px 16px;border-radius:12px;cursor:pointer;
+  border:3px solid #000;background:rgba(255,255,255,.06);color:#d8cfff;box-shadow:3px 3px 0 #000;transition:.12s}
+.chip:hover{transform:translateY(-2px);color:#fff;border-color:#ff2ec4}
+.chip.on{background:linear-gradient(135deg,#ffe600,#ff2ec4);color:#000;transform:rotate(-2deg);animation:wobble 3s ease-in-out infinite}
 
 .go{
   font:inherit;font-size:24px;font-weight:900;padding:18px 30px;border:5px solid #000;border-radius:18px;
@@ -134,6 +139,15 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
       <span id="qLabel">7</span>
     </div>
     <div class="emoji-row" id="qDesc">умеренный шакал</div>
+    <div class="styles" id="styles">
+      <button class="chip on" data-style="classic">Классика</button>
+      <button class="chip" data-style="vhs">VHS</button>
+      <button class="chip" data-style="fried">Прожарка</button>
+      <button class="chip" data-style="bit8">8-бит</button>
+      <button class="chip" data-style="potato">Картошка</button>
+      <button class="chip" data-style="glitch">Глитч</button>
+      <button class="chip" data-style="mono">Моно</button>
+    </div>
     <button class="go" id="go">ШАКАЛИЗИРОВАТЬ</button>
   </div>
 
@@ -167,6 +181,29 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     var file = null;
 
     var DESCS = ['', 'почти нормально', 'лёгкий шакал', 'шакал просыпается', 'шакал набирает силу', 'умеренный шакал', 'чёткий шакал', 'жёсткий шакал', 'шакал-мама', 'тотальный шакал', 'ШАКАЛ БОГ'];
+    var STYLES = {
+        classic: { name: 'Классика', noise: 0, poster: 0, sat: 1, con: 1, gray: 0, scan: 0, slice: 0, rgbShift: 0 },
+        vhs:     { name: 'VHS', noise: 16, poster: 0, sat: 1.15, con: 1.05, gray: 0, scan: 2, slice: 0, rgbShift: 2, extraQ: 0.01 },
+        fried:   { name: 'Прожарка', noise: 24, poster: 0, sat: 2.8, con: 2.0, gray: 0, scan: 0, slice: 0, rgbShift: 1 },
+        bit8:    { name: '8-бит', noise: 0, poster: 16, sat: 1.5, con: 1.25, gray: 0, scan: 0, slice: 0, rgbShift: 0 },
+        potato:  { name: 'Картошка', noise: 6, poster: 0, sat: 1.1, con: 1.05, gray: 0, scan: 0, slice: 0, rgbShift: 0, extraDiv: 3, extraQ: 0.02 },
+        glitch:  { name: 'Глитч', noise: 8, poster: 0, sat: 1.35, con: 1.2, gray: 0, scan: 0, slice: 14, rgbShift: 5 },
+        mono:    { name: 'Моно', noise: 8, poster: 0, sat: 1, con: 1.3, gray: 1, scan: 0, slice: 0, rgbShift: 0 }
+    };
+    var currentStyle = 'classic';
+
+    function bindStyleChips() {
+        var chips = document.querySelectorAll('.chip');
+        function select(el) {
+            for (var k = 0; k < chips.length; k++) chips[k].classList.remove('on');
+            el.classList.add('on');
+            currentStyle = el.getAttribute('data-style');
+        }
+        for (var i = 0; i < chips.length; i++) {
+            (function (el) { el.onclick = function () { select(el); }; })(chips[i]);
+        }
+    }
+
     function setStatus(s) { statusEl.textContent = s || ''; }
     function setFile(f) {
         if (!f) return;
@@ -183,6 +220,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     fileIn.onchange = function () { if (fileIn.files[0]) setFile(fileIn.files[0]); };
     q.oninput = function () { qLabel.textContent = q.value; qDesc.textContent = DESCS[q.value] || ''; };
     qDesc.textContent = DESCS[7];
+    bindStyleChips();
 
     go.onclick = async function () {
         if (!file) { setStatus('Сначала кинь файл!'); return; }
@@ -229,12 +267,16 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             var img = new Image();
             img.onerror = function () { reject(new Error('Не удалось открыть картинку')); };
             img.onload = function () {
-                var div = 2 + level * 3;                      // 5..32
+                var st = STYLES[currentStyle] || STYLES.classic;
+                var div = 2 + level * 3 + (st.extraDiv || 0);
                 var w = Math.max(8, Math.floor(img.width / div));
                 var h = Math.max(8, Math.floor(img.height / div));
+
                 var small = document.createElement('canvas');
                 small.width = w; small.height = h;
-                small.getContext('2d').drawImage(img, 0, 0, w, h);
+                var sctx = small.getContext('2d');
+                sctx.drawImage(img, 0, 0, w, h);
+                applyPixelStyle(sctx, w, h, st, level);
 
                 // растягиваем обратно до исходных размеров — пиксели, но не «далеко»
                 var c = document.createElement('canvas');
@@ -242,8 +284,9 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
                 var ctx = c.getContext('2d');
                 ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(small, 0, 0, w, h, 0, 0, img.width, img.height);
+                applyBigStyle(ctx, c.width, c.height, st, level);
 
-                var quality = Math.max(0.01, 0.06 - level * 0.005);
+                var quality = Math.max(0.01, 0.06 - level * 0.005 - (st.extraQ || 0));
                 c.toBlob(function (b) {
                     if (b) resolve({ kind: 'image', blob: b });
                     else resolve({ kind: 'image', blob: dataURLtoBlob(c.toDataURL('image/jpeg', 0.01)) });
@@ -251,6 +294,61 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             };
             img.src = URL.createObjectURL(f);
         });
+    }
+
+    function applyPixelStyle(ctx, w, h, st, level) {
+        if (!st.noise && !st.poster && st.sat === 1 && st.con === 1 && !st.gray && !st.rgbShift) return;
+        var id = ctx.getImageData(0, 0, w, h);
+        var d = id.data;
+        var noise = st.noise ? st.noise * (0.5 + level * 0.08) : 0;
+        var poster = st.poster || 0;
+        var sat = st.sat, con = st.con, gray = st.gray;
+        for (var i = 0; i < d.length; i += 4) {
+            var r = d[i], g = d[i + 1], b = d[i + 2];
+            if (noise) { var n = (Math.random() - 0.5) * noise * 2; r += n; g += n; b += n; }
+            if (gray) { var l = r * 0.299 + g * 0.587 + b * 0.114; r = l; g = l; b = l; }
+            if (sat !== 1 || con !== 1) {
+                var l2 = r * 0.299 + g * 0.587 + b * 0.114;
+                r = l2 + (r - l2) * sat; g = l2 + (g - l2) * sat; b = l2 + (b - l2) * sat;
+                r = (r - 128) * con + 128; g = (g - 128) * con + 128; b = (b - 128) * con + 128;
+            }
+            if (poster) {
+                var pstep = 256 / poster;
+                r = Math.round(r / pstep) * pstep; g = Math.round(g / pstep) * pstep; b = Math.round(b / pstep) * pstep;
+            }
+            d[i] = r; d[i + 1] = g; d[i + 2] = b;
+        }
+        if (st.rgbShift) {
+            var copy = new Uint8ClampedArray(d);
+            var sh = Math.max(1, Math.round(st.rgbShift * (0.5 + level * 0.1)));
+            for (var y = 0; y < h; y++) {
+                for (var x = 0; x < w; x++) {
+                    var idx = (y * w + x) * 4;
+                    var xr = Math.min(w - 1, Math.max(0, x - sh));
+                    var xb = Math.min(w - 1, Math.max(0, x + sh));
+                    d[idx] = copy[(y * w + xr) * 4];
+                    d[idx + 2] = copy[(y * w + xb) * 4 + 2];
+                }
+            }
+        }
+        ctx.putImageData(id, 0, 0);
+    }
+
+    function applyBigStyle(ctx, W, H, st, level) {
+        if (st.scan) {
+            var step = Math.max(2, Math.round(4 - level * 0.2));
+            ctx.fillStyle = 'rgba(0,0,0,' + (0.18 + level * 0.015).toFixed(3) + ')';
+            for (var y = 0; y < H; y += step) ctx.fillRect(0, y, W, 1);
+        }
+        if (st.slice) {
+            var cnt = 4 + level;
+            for (var k = 0; k < cnt; k++) {
+                var sy = Math.random() * H;
+                var shh = Math.max(2, Math.random() * (H / 14));
+                var off = (Math.random() - 0.5) * st.slice * (0.6 + level * 0.1) * 2;
+                try { ctx.drawImage(ctx.canvas, 0, sy, W, shh, off, sy, W, shh); } catch (_) {}
+            }
+        }
     }
 
     function dataURLtoBlob(d) {
@@ -294,7 +392,19 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
                 rec.onstop = function () { resolve({ kind: 'video', blob: new Blob(chunks, { type: 'video/webm' }) }); };
                 rec.start();
                 v.play().catch(function () {});
-                var draw = setInterval(function () { try { ctx.drawImage(v, 0, 0, w, h); } catch (_) {} }, 1000 / 12);
+                var st = STYLES[currentStyle] || STYLES.classic;
+                var vf = 'saturate(' + (st.sat * 100) + '%) contrast(' + (st.con * 100) + '%)' + (st.gray ? ' grayscale(100%)' : '');
+                var draw = setInterval(function () {
+                    try {
+                        ctx.filter = vf;
+                        ctx.drawImage(v, 0, 0, w, h);
+                        ctx.filter = 'none';
+                        if (st.scan) {
+                            ctx.fillStyle = 'rgba(0,0,0,.2)';
+                            for (var yy = 0; yy < h; yy += 3) ctx.fillRect(0, yy, w, 1);
+                        }
+                    } catch (_) {}
+                }, 1000 / 12);
                 v.onended = function () { clearInterval(draw); try { rec.stop(); } catch (_) {} };
                 setTimeout(function () { if (v.duration && !v.ended) { clearInterval(draw); try { rec.stop(); } catch (_) {} } }, 120000);
             };
