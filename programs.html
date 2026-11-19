@@ -10,6 +10,23 @@
     <!-- Подключение внешних стилей и скриптов -->
     <link rel="stylesheet" href="style.css">
     <script src="app.js" defer></script><script src="notify.js" defer></script><script src="anim.js" defer></script>
+<style>
+/* шакализатор-плитка */
+.shakal-card{position:relative;overflow:hidden}
+.shakal-card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,rgba(255,46,196,.09) 0 1px,transparent 1px 3px);
+  opacity:0;transition:opacity .25s}
+.shakal-card:hover::before{opacity:1}
+.shakal-card>*{position:relative;z-index:1}
+.shakal-card:hover{transform:translateY(-5px) rotate(-.7deg)!important;border-color:rgba(255,46,196,.65)!important;
+  box-shadow:0 0 0 2px rgba(255,46,196,.22),0 16px 44px rgba(255,46,196,.32)!important}
+.shakal-card h3{text-shadow:2px 0 #ff2ec4,-2px 0 #00ffa3}
+.shakal-card .project-btn{background:linear-gradient(135deg,#ffe600,#ff2ec4)!important;color:#000!important;font-weight:900}
+.shakal-joke{font-size:12px!important;color:#ffe600!important;font-weight:800;transform:rotate(-1deg)}
+.shakal-card img{filter:drop-shadow(0 0 16px rgba(255,46,196,.55))}
+.shakal-card:hover img{animation:shk .35s steps(2) infinite}
+@keyframes shk{0%{transform:translate(0,0)}50%{transform:translate(-2px,1px)}100%{transform:translate(2px,-1px)}}
+</style>
 </head>
 <body>
     <!-- ШАПКА В СТИЛЕ PWGOODSTORE -->
@@ -78,13 +95,13 @@
                     <a href="utils.html" class="project-btn">Открыть</a>
                 </div>
 
-                <!-- ДАУНСКЕЙЛЕР -->
-                <div class="project-card">
-                    <h3>ДАУНСКЕЙЛЕР</h3>
+                <!-- ШАКАЛИЗАТОР -->
+                <div class="project-card shakal-card">
+                    <img src="shakal.svg" alt="Шакализатор" class="project-card-img-md">
+                    <h3>ШАКАЛИЗАТОР</h3>
                     <p>убей качество фото, видео и звука. Работает прямо в браузере, файлы никуда не грузятся.</p>
-                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                    <a href="downscaler.html" class="project-btn">Открыть</a>
+                    <p class="shakal-joke">качество не пострадало. его просто не было 💀</p>
+                    <a href="shakalizer.html" class="project-btn">ШАКАЛИЗИРОВАТЬ</a>
                 </div>
             </div>
         </section>

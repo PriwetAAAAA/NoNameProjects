@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ШАКАЛИЗАТОР — убей качество</title>
+<link rel="icon" href="shakal.svg">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  font-family:"Comic Sans MS","Segoe UI",system-ui,sans-serif;
+  background:#08000f;color:#fff;overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(255,46,196,.42), transparent 42%),
+    radial-gradient(circle at 88% 16%, rgba(0,255,163,.34), transparent 44%),
+    radial-gradient(circle at 50% 105%, rgba(255,230,0,.28), transparent 52%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 2px, transparent 2px 9px);
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:20;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px);
+  mix-blend-mode:multiply;opacity:.55;
+}
+@keyframes wobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-14px) rotate(4deg)}}
+@keyframes gl1{0%{transform:translate(-4px,-2px)}33%{transform:translate(4px,2px)}66%{transform:translate(-2px,1px)}100%{transform:translate(2px,-1px)}}
+@keyframes gl2{0%{transform:translate(3px,2px)}33%{transform:translate(-3px,-2px)}66%{transform:translate(2px,-1px)}100%{transform:translate(-2px,2px)}}
+@keyframes mu{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes hue{0%,100%{filter:hue-rotate(0)}50%{filter:hue-rotate(40deg)}}
+
+/* плавающие пиксели-декор */
+.px{position:fixed;width:14px;height:14px;border-radius:3px;pointer-events:none;z-index:1;
+  background:#ff2ec4;box-shadow:0 0 14px #ff2ec4;animation:floaty 7s ease-in-out infinite}
+.px.b{background:#00ffa3;box-shadow:0 0 14px #00ffa3;animation-delay:-2s}
+.px.c{background:#ffe600;box-shadow:0 0 14px #ffe600;animation-delay:-4s}
+
+/* шапка */
+.marquee{overflow:hidden;white-space:nowrap;background:#ffe600;color:#000;font-weight:900;font-size:18px;
+  padding:6px 0;border-top:3px dashed #000;border-bottom:3px dashed #000;transform:rotate(.6deg);
+  margin:8px -10px 20px;box-shadow:0 0 30px rgba(255,230,0,.4)}
+.marquee span{display:inline-block;padding-left:100%;animation:mu 12s linear infinite}
+.back{position:relative;z-index:5;display:inline-block;margin:12px 18px;color:#c9a6ff;text-decoration:none;font-weight:700;font-size:14px}
+.back:hover{color:#fff;text-decoration:underline wavy #ff2ec4}
+
+/* заголовок-глитч */
+h1{
+  position:relative;text-align:center;font-weight:900;letter-spacing:-2px;
+  font-size:clamp(34px,9vw,104px);line-height:.9;padding:18px 10px 6px;
+  color:#fff;text-shadow:5px 0 #ff2ec4, -5px 0 #00ffa3, 0 8px #ffe600;
+  animation:hue 6s ease-in-out infinite;
+}
+h1::before,h1::after{content:attr(data-text);position:absolute;left:0;top:18px;width:100%;text-align:center;pointer-events:none}
+h1::before{color:#ff2ec4;clip-path:inset(0 0 58% 0);animation:gl1 2.4s infinite linear alternate-reverse;opacity:.85}
+h1::after{color:#00ffa3;clip-path:inset(62% 0 0 0);animation:gl2 1.9s infinite linear alternate-reverse;opacity:.85}
+
+main{position:relative;z-index:5;max-width:900px;margin:0 auto;padding:0 16px 100px}
+.sub{text-align:center;font-size:19px;font-weight:800;color:#ffe600;margin:14px 0 26px;
+  transform:rotate(1.2deg);text-shadow:2px 2px 0 #000}
+
+/* зона загрузки */
+.drop{
+  position:relative;border:5px dashed #ff2ec4;border-radius:26px;padding:46px 20px;text-align:center;
+  font-size:21px;font-weight:900;cursor:pointer;background:rgba(255,255,255,.04);
+  transform:rotate(-1.2deg);transition:.15s;box-shadow:0 0 46px rgba(255,46,196,.45), inset 0 0 70px rgba(0,255,163,.08);
+  overflow:hidden;
+}
+.drop::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  transform:translateX(-100%);animation:shine 3.4s ease-in-out infinite}
+@keyframes shine{50%,100%{transform:translateX(120%)}}
+.drop:hover{transform:rotate(1.4deg) scale(1.02);border-color:#00ffa3;background:rgba(0,255,163,.08)}
+.drop.over{transform:scale(1.05) rotate(-2deg);border-color:#ffe600;background:rgba(255,230,0,.14)}
+.drop small{display:block;font-size:13px;color:#c9a6ff;margin-top:10px;font-weight:700}
+
+/* настройки */
+.ctrl{display:none;margin-top:28px;text-align:center;transform:rotate(.7deg)}
+.ctrl.show{display:block}
+.qrow{display:flex;align-items:center;justify-content:center;gap:14px;font-size:21px;font-weight:900;margin-bottom:18px;flex-wrap:wrap}
+input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
+#qLabel{color:#ffe600;font-size:26px;text-shadow:2px 2px 0 #000}
+.emoji-row{font-size:13px;color:#8f7cc0;font-weight:700;margin:-8px 0 16px}
+
+.go{
+  font:inherit;font-size:24px;font-weight:900;padding:18px 30px;border:5px solid #000;border-radius:18px;
+  background:linear-gradient(135deg,#ffe600,#ff2ec4);color:#000;cursor:pointer;
+  box-shadow:9px 9px 0 #000;transform:rotate(-1.4deg);transition:.1s;animation:wobble 4s ease-in-out infinite;
+}
+.go:active{transform:translate(7px,7px) rotate(-1.4deg);box-shadow:2px 2px 0 #000}
+.go:disabled{opacity:.55;cursor:wait;animation:none}
+
+.status{margin-top:20px;text-align:center;font-size:17px;font-weight:800;color:#ffe600;min-height:26px}
+.out{display:none;margin-top:26px;transform:rotate(-.7deg)}
+.out.show{display:block}
+.preview{border:5px solid #00ffa3;border-radius:20px;overflow:hidden;background:#000;
+  box-shadow:0 0 56px rgba(0,255,163,.45);text-align:center}
+.preview img,.preview video{max-width:100%;display:block;margin:0 auto;image-rendering:pixelated}
+.preview audio{width:100%;padding:20px}
+.dl{display:block;text-align:center;font-size:23px;font-weight:900;text-decoration:none;margin-top:18px;padding:16px;
+  border:5px solid #000;border-radius:16px;color:#000;background:linear-gradient(135deg,#00ffa3,#ffe600);
+  box-shadow:9px 9px 0 #000;transform:rotate(1.2deg)}
+.dl:active{transform:translate(6px,6px) rotate(1.2deg);box-shadow:2px 2px 0 #000}
+
+.jokes{margin-top:44px;display:grid;gap:10px;font-size:14px;font-weight:700;color:#b98cff;text-align:center;line-height:1.7}
+.jokes b{color:#ffe600}
+@media(max-width:560px){.go{font-size:19px;padding:14px 20px}h1{text-shadow:3px 0 #ff2ec4,-3px 0 #00ffa3,0 5px #ffe600}}
+</style>
+</head>
+<body>
+
+<div class="px" style="left:6%;top:22%"></div>
+<div class="px b" style="left:88%;top:30%"></div>
+<div class="px c" style="left:12%;top:74%"></div>
+<div class="px b" style="left:80%;top:82%"></div>
+<div class="px c" style="left:46%;top:8%"></div>
+
+<a class="back" href="index.html">← на главную</a>
+
+<div class="marquee"><span>⚠️ ШАКАЛИЗАТОР • КАЧЕСТВО УМЕРЛО • ПИКСЕЛИ — ЭТО ТОЖЕ ПИКСЕЛИ • ВНИМАНИЕ: ФАЙЛ СТАНЕТ УЖАСНЫМ • ⚠️ ШАКАЛИЗАТОР • КАЧЕСТВО УМЕРЛО • ПИКСЕЛИ — ЭТО ТОЖЕ ПИКСЕЛИ •</span></div>
+
+<main>
+  <h1 data-text="ШАКАЛИЗАТОР">ШАКАЛИЗАТОР</h1>
+  <p class="sub">закинь фото / видео / звук — и мы сделаем ему ОЧЕНЬ БОЛЬНО 🔥</p>
+
+  <div class="drop" id="drop">
+    ЖМИ СЮДА или ПЕРЕТАЩИ ФАЙЛ
+    <small>фото (png/jpg) · видео (mp4/webm) · звук (mp3/wav/ogg)</small>
+  </div>
+  <input type="file" id="file" hidden accept="image/*,video/*,audio/*">
+
+  <div class="ctrl" id="ctrl">
+    <div class="qrow">
+      <span>ШАКАЛ:</span>
+      <input type="range" id="q" min="1" max="10" value="7">
+      <span id="qLabel">7</span>
+    </div>
+    <div class="emoji-row" id="qDesc">умеренный шакал</div>
+    <button class="go" id="go">ШАКАЛИЗИРОВАТЬ</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="out" id="out">
+    <div class="preview" id="preview"></div>
+    <a class="dl" id="dl" download>⬇ СКАЧАТЬ ШАКАЛА</a>
+  </div>
+
+  <div class="jokes">
+    <div>всё делается <b>ПРЯМО В БРАУЗЕРЕ</b> — файлы никуда не загружаются</div>
+    <div>качество не пострадало. его просто <b>не было</b> 💀</div>
+    <div>если стало хуже — <b>так и задумано</b></div>
+  </div>
+</main>
+
+<script>
+(function () {
+    var drop = document.getElementById('drop');
+    var fileIn = document.getElementById('file');
+    var ctrl = document.getElementById('ctrl');
+    var q = document.getElementById('q');
+    var qLabel = document.getElementById('qLabel');
+    var qDesc = document.getElementById('qDesc');
+    var go = document.getElementById('go');
+    var statusEl = document.getElementById('status');
+    var out = document.getElementById('out');
+    var preview = document.getElementById('preview');
+    var dl = document.getElementById('dl');
+    var file = null;
+
+    var DESCS = ['', 'почти нормально', 'лёгкий шакал', 'шакал просыпается', 'шакал набирает силу', 'умеренный шакал', 'чёткий шакал', 'жёсткий шакал', 'шакал-мама', 'тотальный шакал', 'ШАКАЛ БОГ'];
+    function setStatus(s) { statusEl.textContent = s || ''; }
+    function setFile(f) {
+        if (!f) return;
+        file = f;
+        out.classList.remove('show');
+        ctrl.classList.add('show');
+        setStatus('Файл: ' + f.name + ' (' + Math.round(f.size / 1024) + ' КБ)');
+    }
+
+    drop.onclick = function () { fileIn.click(); };
+    drop.ondragover = function (e) { e.preventDefault(); drop.classList.add('over'); };
+    drop.ondragleave = function () { drop.classList.remove('over'); };
+    drop.ondrop = function (e) { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); };
+    fileIn.onchange = function () { if (fileIn.files[0]) setFile(fileIn.files[0]); };
+    q.oninput = function () { qLabel.textContent = q.value; qDesc.textContent = DESCS[q.value] || ''; };
+    qDesc.textContent = DESCS[7];
+
+    go.onclick = async function () {
+        if (!file) { setStatus('Сначала кинь файл!'); return; }
+        var level = parseInt(q.value, 10);
+        go.disabled = true;
+        setStatus('ШАКАЛИЗИРУЮ...');
+        out.classList.remove('show');
+        try {
+            var t = (file.type || '').split('/')[0];
+            var res;
+            if (t === 'image') res = await shakalImage(file, level);
+            else if (t === 'video') res = await shakalVideo(file, level);
+            else if (t === 'audio') res = await shakalAudio(file, level);
+            else throw new Error('Неизвестный тип файла: ' + file.type);
+            showResult(res);
+            setStatus('Готово. Качество уничтожено. 💀');
+        } catch (e) {
+            setStatus('Ошибка: ' + (e && e.message ? e.message : e));
+        } finally {
+            go.disabled = false;
+        }
+    };
+
+    function showResult(res) {
+        preview.innerHTML = '';
+        var url = URL.createObjectURL(res.blob);
+        if (res.kind === 'image') {
+            var img = document.createElement('img'); img.src = url; img.alt = 'shakal'; preview.appendChild(img);
+            dl.download = 'shakal.jpg';
+        } else if (res.kind === 'video') {
+            var v = document.createElement('video'); v.src = url; v.controls = true; v.loop = true; v.autoplay = true; preview.appendChild(v);
+            dl.download = 'shakal.webm';
+        } else {
+            var a = document.createElement('audio'); a.src = url; a.controls = true; preview.appendChild(a);
+            dl.download = 'shakal.wav';
+        }
+        dl.href = url;
+        out.classList.add('show');
+    }
+
+    // ---------- ФОТО: сохраняем РАЗМЕР, портим только качество ----------
+    function shakalImage(f, level) {
+        return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onerror = function () { reject(new Error('Не удалось открыть картинку')); };
+            img.onload = function () {
+                var div = 2 + level * 3;                      // 5..32
+                var w = Math.max(8, Math.floor(img.width / div));
+                var h = Math.max(8, Math.floor(img.height / div));
+                var small = document.createElement('canvas');
+                small.width = w; small.height = h;
+                small.getContext('2d').drawImage(img, 0, 0, w, h);
+
+                // растягиваем обратно до исходных размеров — пиксели, но не «далеко»
+                var c = document.createElement('canvas');
+                c.width = img.width; c.height = img.height;
+                var ctx = c.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(small, 0, 0, w, h, 0, 0, img.width, img.height);
+
+                var quality = Math.max(0.01, 0.06 - level * 0.005);
+                c.toBlob(function (b) {
+                    if (b) resolve({ kind: 'image', blob: b });
+                    else resolve({ kind: 'image', blob: dataURLtoBlob(c.toDataURL('image/jpeg', 0.01)) });
+                }, 'image/jpeg', quality);
+            };
+            img.src = URL.createObjectURL(f);
+        });
+    }
+
+    function dataURLtoBlob(d) {
+        var parts = d.split(',');
+        var mime = parts[0].match(/:(.*?);/)[1];
+        var bin = atob(parts[1]);
+        var arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return new Blob([arr], { type: mime });
+    }
+
+    // ---------- ВИДЕО ----------
+    function shakalVideo(f, level) {
+        return new Promise(function (resolve, reject) {
+            var v = document.createElement('video');
+            v.src = URL.createObjectURL(f);
+            v.muted = false;
+            v.playsInline = true;
+            v.onerror = function () { reject(new Error('Не удалось открыть видео')); };
+            v.onloadedmetadata = function () {
+                var scale = 1 / (4 + level * 2);
+                var w = Math.max(32, Math.floor((v.videoWidth || 320) * scale));
+                var h = Math.max(32, Math.floor((v.videoHeight || 240) * scale));
+                var c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                var ctx = c.getContext('2d');
+                var stream = c.captureStream(12);
+                try {
+                    var ac = new (window.AudioContext || window.webkitAudioContext)();
+                    var src = ac.createMediaElementSource(v);
+                    var dest = ac.createMediaStreamDestination();
+                    src.connect(dest);
+                    dest.stream.getAudioTracks().forEach(function (t) { stream.addTrack(t); });
+                } catch (_) { }
+                var bitrate = 30000 + level * 8000;
+                var mime = (window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm;codecs=vp8'))
+                    ? 'video/webm;codecs=vp8' : 'video/webm';
+                var rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bitrate });
+                var chunks = [];
+                rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+                rec.onstop = function () { resolve({ kind: 'video', blob: new Blob(chunks, { type: 'video/webm' }) }); };
+                rec.start();
+                v.play().catch(function () {});
+                var draw = setInterval(function () { try { ctx.drawImage(v, 0, 0, w, h); } catch (_) {} }, 1000 / 12);
+                v.onended = function () { clearInterval(draw); try { rec.stop(); } catch (_) {} };
+                setTimeout(function () { if (v.duration && !v.ended) { clearInterval(draw); try { rec.stop(); } catch (_) {} } }, 120000);
+            };
+            v.load();
+        });
+    }
+
+    // ---------- ЗВУК ----------
+    function shakalAudio(f, level) {
+        return new Promise(function (resolve, reject) {
+            var Ctx = window.AudioContext || window.webkitAudioContext;
+            var ac = new Ctx();
+            f.arrayBuffer().then(function (buf) {
+                return new Promise(function (res, rej) {
+                    ac.decodeAudioData(buf, res, function () { rej(new Error('Не удалось декодировать звук')); });
+                });
+            }).then(function (audio) {
+                var rate = Math.max(3000, 11000 - level * 900);
+                var src = audio.getChannelData(0);
+                var step = Math.max(1, Math.round(audio.sampleRate / rate));
+                var outLen = Math.floor(src.length / step);
+                var samples = new Uint8Array(outLen);
+                for (var i = 0; i < outLen; i++) {
+                    var s = src[i * step] || 0;
+                    samples[i] = Math.max(0, Math.min(255, Math.round(128 + s * 127)));
+                }
+                resolve({ kind: 'audio', blob: encodeWav(samples, Math.round(audio.sampleRate / step)) });
+            }).catch(function (e) { reject(e); });
+        });
+    }
+
+    function encodeWav(samples, sampleRate) {
+        var buf = new ArrayBuffer(44 + samples.length);
+        var v = new DataView(buf);
+        function str(off, s) { for (var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
+        str(0, 'RIFF'); v.setUint32(4, 36 + samples.length, true); str(8, 'WAVE');
+        str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+        v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+        str(36, 'data'); v.setUint32(40, samples.length, true);
+        for (var i = 0; i < samples.length; i++) v.setUint8(44 + i, samples[i]);
+        return new Blob([buf], { type: 'audio/wav' });
+    }
+})();
+</script>
+</body>
+</html>
