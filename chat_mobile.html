@@ -186,6 +186,10 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
 .time-row span { font-size: 13px; color: #a6adf0; }
 .time-toggle { display: flex; align-items: center; gap: 6px; text-transform: none; letter-spacing: 0; cursor: pointer; }
 .time-toggle input { width: 16px; height: 16px; }
+
+.crop-box { position: relative; width: 260px; height: 260px; margin: 0 auto 12px; border-radius: 50%; overflow: hidden; background: #05060f; cursor: grab; border: 2px solid rgba(168,85,247,.5); }
+.crop-img { position: absolute; left: 0; top: 0; transform-origin: 0 0; user-select: none; -webkit-user-drag: none; max-width: none !important; }
+.crop-zoom { width: 100%; margin: 0 0 14px; }
 </style>
 </head>
 <body class="mobile-chat">
@@ -708,6 +712,10 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
                     var mine = avatars[myId];
                     $('avPreview').innerHTML = mine ? '<img src="' + mine + '" alt="">' : (myName || '?').charAt(0).toUpperCase();
                 }
+                if ($('myAv')) {
+                    var mine2 = avatars[myId];
+                    $('myAv').innerHTML = mine2 ? '<img class="av-img" src="' + mine2 + '" alt="">' : (myName || '?').charAt(0).toUpperCase();
+                }
                 renderPeople();
             }).catch(function () {});
     }
@@ -722,19 +730,68 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
     function uploadAvatar(file) {
         if (file.size > 8 * 1024 * 1024) { alert('Картинка до 8 МБ'); return; }
         var reader = new FileReader();
-        reader.onload = function () {
-            var img = new Image();
-            img.onload = function () {
-                var c = document.createElement('canvas');
-                c.width = c.height = 128;
-                var ctx = c.getContext('2d');
-                var s = Math.min(img.width, img.height);
-                ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 128, 128);
-                saveAvatar(c.toDataURL('image/jpeg', 0.82));
-            };
-            img.src = reader.result;
-        };
+        reader.onload = function () { openCrop(reader.result); };
         reader.readAsDataURL(file);
+    }
+
+    function openCrop(src) {
+        var old = document.getElementById('nn-crop');
+        if (old) old.remove();
+        var ov = document.createElement('div');
+        ov.id = 'nn-crop';
+        ov.className = 'nl-modal show';
+        ov.innerHTML = '<div class="nl-card" style="max-width:360px">'
+            + '<h3>Обрезка аватара</h3>'
+            + '<p>Перетащи фото и выбери масштаб.</p>'
+            + '<div id="cropBox" class="crop-box"><img id="cropImg" class="crop-img" alt=""></div>'
+            + '<input type="range" id="cropZoom" min="100" max="300" value="100" class="crop-zoom">'
+            + '<div class="row"><button class="primary" id="cropSave">Сохранить</button><button class="ghost" id="cropCancel">Отмена</button></div>'
+            + '</div>';
+        document.body.appendChild(ov);
+        var img = ov.querySelector('#cropImg');
+        var zoom = ov.querySelector('#cropZoom');
+        var st = { x: 0, y: 0, scale: 1, drag: false, px: 0, py: 0, base: 1 };
+        var boxW = 260, boxH = 260;
+        img.src = src;
+        img.onload = function () {
+            img.style.width = img.naturalWidth + 'px';
+            img.style.height = img.naturalHeight + 'px';
+            st.base = Math.max(boxW / img.naturalWidth, boxH / img.naturalHeight);
+            st.scale = st.base;
+            st.x = (boxW - img.naturalWidth * st.scale) / 2;
+            st.y = (boxH - img.naturalHeight * st.scale) / 2;
+            apply();
+        };
+        function apply() { img.style.transform = 'translate(' + st.x + 'px,' + st.y + 'px) scale(' + st.scale + ')'; }
+        function clamp() {
+            var w = img.naturalWidth * st.scale, h = img.naturalHeight * st.scale;
+            st.x = Math.min(0, Math.max(boxW - w, st.x));
+            st.y = Math.min(0, Math.max(boxH - h, st.y));
+        }
+        img.addEventListener('mousedown', function (e) { st.drag = true; st.px = e.clientX - st.x; st.py = e.clientY - st.y; e.preventDefault(); });
+        window.addEventListener('mousemove', function (e) { if (!st.drag) return; st.x = e.clientX - st.px; st.y = e.clientY - st.py; clamp(); apply(); });
+        window.addEventListener('mouseup', function () { st.drag = false; });
+        img.addEventListener('touchstart', function (e) { var t = e.touches[0]; st.drag = true; st.px = t.clientX - st.x; st.py = t.clientY - st.y; }, { passive: true });
+        window.addEventListener('touchmove', function (e) { if (!st.drag) return; var t = e.touches[0]; st.x = t.clientX - st.px; st.y = t.clientY - st.py; clamp(); apply(); }, { passive: true });
+        window.addEventListener('touchend', function () { st.drag = false; });
+        zoom.addEventListener('input', function () {
+            var ns = st.base * (zoom.value / 100);
+            var cx = boxW / 2, cy = boxH / 2;
+            var ipx = (cx - st.x) / st.scale, ipy = (cy - st.y) / st.scale;
+            st.scale = ns;
+            st.x = cx - ipx * ns; st.y = cy - ipy * ns;
+            clamp(); apply();
+        });
+        ov.querySelector('#cropCancel').onclick = function () { ov.remove(); };
+        ov.querySelector('#cropSave').onclick = function () {
+            var iw = boxW / st.scale, ih = boxH / st.scale;
+            var ix = -st.x / st.scale, iy = -st.y / st.scale;
+            var c = document.createElement('canvas');
+            c.width = c.height = 128;
+            c.getContext('2d').drawImage(img, ix, iy, iw, ih, 0, 0, 128, 128);
+            ov.remove();
+            saveAvatar(c.toDataURL('image/jpeg', 0.82));
+        };
     }
 
     function saveAvatar(url) {
@@ -807,12 +864,20 @@ body.menu-open .mc-backdrop { opacity: 1; pointer-events: auto; }
     }
 
     function openProfile(userId, fallbackName) {
-        $('profAv').textContent = initial(fallbackName); $('profName').textContent = fallbackName || '—';
+        var av0 = avatars[userId];
+        if (av0) $('profAv').innerHTML = '<img class="av-img" src="' + av0 + '" alt="">';
+        else $('profAv').textContent = initial(fallbackName);
+        $('profName').textContent = fallbackName || '—';
         $('profStatus').textContent = onlineIds[userId] ? 'В сети' : 'Не в сети';
         $('profStatus').className = 'profile-status' + (onlineIds[userId] ? ' live' : '');
         openModal('profileModal');
         q(function () { return sb.from('profiles').select('*').eq('id', userId).maybeSingle(); }).then(function (r) {
-            var p = r.data; if (p) { $('profName').textContent = p.name || fallbackName; $('profAv').textContent = initial(p.name || fallbackName); }
+            var p = r.data;
+            if (p) {
+                $('profName').textContent = p.name || fallbackName;
+                if (p.avatar) { avatars[userId] = p.avatar; $('profAv').innerHTML = '<img class="av-img" src="' + p.avatar + '" alt="">'; }
+                else if (!avatars[userId]) { $('profAv').textContent = initial(p.name || fallbackName); }
+            }
         }).catch(function () {});
     }
 

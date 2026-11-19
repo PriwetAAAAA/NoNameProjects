@@ -813,6 +813,19 @@ function openProfileModal() {
     document.getElementById('profile-modal-username').textContent = displayName;
     document.getElementById('profile-modal-login').textContent = user.id;
 
+    // подтянуть актуальный аватар из базы (может быть новее, чем в localStorage)
+    try {
+        var _c = getSupabaseClient();
+        if (_c) _c.from('profiles').select('avatar').eq('id', user.id).maybeSingle().then(function (r) {
+            var av = r.data && r.data.avatar;
+            if (av) {
+                var im = document.getElementById('profile-modal-avatar');
+                if (im) im.src = av;
+                try { var u = getCurrentUser(); if (u) { u.avatar = av; localStorage.setItem('steam_user', JSON.stringify(u)); } } catch (_) {}
+            }
+        }).catch(function () {});
+    } catch (_) {}
+
     // Пока пароль грузится — показываем маску из точек
     const passwordEl = document.getElementById('profile-modal-password');
     const eyeBtn = document.getElementById('profile-modal-eye');
