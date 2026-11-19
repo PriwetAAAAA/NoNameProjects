@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ДАУНСКЕЙЛЕР — убей качество</title>
+<link rel="icon" href="nnblur.png">
+<style>
+:root{
+  --a:#ff2ec4; --b:#00ffa3; --c:#ffe600; --bg:#0a0010;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  font-family:"Comic Sans MS","Segoe UI",system-ui,sans-serif;
+  background:var(--bg);
+  color:#fff;
+  overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(255,46,196,.35), transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(0,255,163,.3), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(255,230,0,.25), transparent 50%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.03) 0 2px, transparent 2px 8px);
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 1px, transparent 1px 3px);
+  mix-blend-mode:multiply;opacity:.5;
+}
+marquee{display:block}
+.glitch{
+  font-size:clamp(40px,10vw,120px);font-weight:900;letter-spacing:-3px;text-align:center;
+  text-transform:uppercase;line-height:.85;padding:30px 10px 10px;
+  color:#fff;text-shadow:4px 0 var(--a), -4px 0 var(--b), 0 6px var(--c);
+  filter:drop-shadow(0 0 20px rgba(255,46,196,.7));
+  transform:rotate(-1.5deg);
+}
+.marquee{
+  overflow:hidden;white-space:nowrap;background:var(--c);color:#000;
+  font-weight:900;font-size:20px;padding:6px 0;border-top:3px dashed #000;border-bottom:3px dashed #000;
+  transform:rotate(.7deg);margin:10px 0 26px;
+}
+.marquee span{display:inline-block;animation:mu 9s linear infinite}
+@keyframes mu{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+main{max-width:920px;margin:0 auto;padding:10px 16px 90px}
+.sub{text-align:center;font-size:20px;color:#ffe600;font-weight:800;transform:rotate(1deg);margin-bottom:24px;text-shadow:2px 2px 0 #000}
+.drop{
+  border:5px dashed var(--a);border-radius:26px;padding:48px 20px;text-align:center;
+  font-size:22px;font-weight:900;cursor:pointer;background:rgba(255,255,255,.04);
+  transform:rotate(-1deg);transition:transform .15s,background .15s,border-color .15s;
+  box-shadow:0 0 40px rgba(255,46,196,.4), inset 0 0 60px rgba(0,255,163,.08);
+}
+.drop:hover{transform:rotate(1deg) scale(1.02);border-color:var(--b);background:rgba(0,255,163,.08)}
+.drop.over{transform:scale(1.04) rotate(-2deg);border-color:var(--c);background:rgba(255,230,0,.12)}
+.drop small{display:block;font-size:13px;font-weight:700;color:#c9a6ff;margin-top:10px}
+.ctrl{display:none;margin-top:26px;text-align:center;transform:rotate(.8deg)}
+.ctrl.show{display:block}
+.qrow{display:flex;align-items:center;justify-content:center;gap:16px;font-size:22px;font-weight:900;margin-bottom:18px;flex-wrap:wrap}
+input[type=range]{width:min(320px,70vw);accent-color:var(--a);height:26px}
+#qLabel{color:var(--c);font-size:26px;text-shadow:2px 2px 0 #000}
+.go{
+  font:inherit;font-size:26px;font-weight:900;padding:18px 34px;border:5px solid #000;border-radius:18px;
+  background:linear-gradient(135deg,var(--c),var(--a));color:#000;cursor:pointer;
+  box-shadow:8px 8px 0 #000;transform:rotate(-1deg);transition:transform .1s,box-shadow .1s;
+}
+.go:active{transform:translate(6px,6px) rotate(-1deg);box-shadow:2px 2px 0 #000}
+.go:disabled{opacity:.5;cursor:wait}
+.status{margin-top:20px;text-align:center;font-size:18px;font-weight:800;color:var(--c);min-height:26px}
+.out{display:none;margin-top:26px;transform:rotate(-.6deg)}
+.out.show{display:block}
+.preview{
+  border:5px solid var(--b);border-radius:20px;overflow:hidden;background:#000;
+  box-shadow:0 0 50px rgba(0,255,163,.4);text-align:center;
+}
+.preview img,.preview video{max-width:100%;display:block;margin:0 auto;image-rendering:pixelated}
+.preview audio{width:100%;padding:20px}
+.dl{
+  display:block;text-align:center;font-size:24px;font-weight:900;text-decoration:none;
+  margin-top:18px;padding:16px;border:5px solid #000;border-radius:16px;color:#000;
+  background:linear-gradient(135deg,var(--b),var(--c));box-shadow:8px 8px 0 #000;transform:rotate(1deg)
+}
+.dl:active{transform:translate(5px,5px) rotate(1deg);box-shadow:2px 2px 0 #000}
+.tips{margin-top:40px;font-size:14px;color:#b98cff;font-weight:700;text-align:center;line-height:1.7}
+@media(max-width:560px){.go{font-size:20px;padding:14px 22px}.glitch{transform:none}}
+</style>
+</head>
+<body>
+
+<marquee class="marquee" scrollamount="12"><span>⚠️ ДАУНСКЕЙЛЕР • КАЧЕСТВО БОЛЬШЕ НЕ НУЖНО • ШАКАЛ 100% • ВНИМАНИЕ: ФАЙЛ СТАНЕТ УЖАСНЫМ • ⚠️ ДАУНСКЕЙЛЕР • КАЧЕСТВО БОЛЬШЕ НЕ НУЖНО • ШАКАЛ 100% •</span></marquee>
+
+<main>
+  <h1 class="glitch">ДАУН<br>СКЕЙ<br>ЛЕР</h1>
+  <p class="sub">закинь фото / видео / звук — и мы сделаем ему ОЧЕНЬ БОЛЬНО 🔥</p>
+
+  <div class="drop" id="drop">
+    ЖМИ СЮДА или ПЕРЕТАЩИ ФАЙЛ
+    <small>фото (png/jpg) · видео (mp4/webm) · звук (mp3/wav/ogg)</small>
+  </div>
+  <input type="file" id="file" hidden accept="image/*,video/*,audio/*">
+
+  <div class="ctrl" id="ctrl">
+    <div class="qrow">
+      <span>ШАКАЛ:</span>
+      <input type="range" id="q" min="1" max="10" value="7">
+      <span id="qLabel">7</span>
+    </div>
+    <button class="go" id="go">УНИЧТОЖИТЬ КАЧЕСТВО</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="out" id="out">
+    <div class="preview" id="preview"></div>
+    <a class="dl" id="dl" download>⬇ СКАЧАТЬ ШАКАЛА</a>
+  </div>
+
+  <p class="tips">всё делается<br>ПРЯМО В ТВОЁМ БРАУЗЕРЕ<br>файлы никуда не загружаются</p>
+</main>
+
+<script>
+(function () {
+    var drop = document.getElementById('drop');
+    var fileIn = document.getElementById('file');
+    var ctrl = document.getElementById('ctrl');
+    var q = document.getElementById('q');
+    var qLabel = document.getElementById('qLabel');
+    var go = document.getElementById('go');
+    var statusEl = document.getElementById('status');
+    var out = document.getElementById('out');
+    var preview = document.getElementById('preview');
+    var dl = document.getElementById('dl');
+    var file = null;
+
+    function setStatus(s) { statusEl.textContent = s || ''; }
+    function setFile(f) {
+        if (!f) return;
+        file = f;
+        out.classList.remove('show');
+        ctrl.classList.add('show');
+        setStatus('Файл: ' + f.name + ' (' + Math.round(f.size / 1024) + ' КБ)');
+    }
+
+    drop.onclick = function () { fileIn.click(); };
+    drop.ondragover = function (e) { e.preventDefault(); drop.classList.add('over'); };
+    drop.ondragleave = function () { drop.classList.remove('over'); };
+    drop.ondrop = function (e) { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); };
+    fileIn.onchange = function () { if (fileIn.files[0]) setFile(fileIn.files[0]); };
+    q.oninput = function () { qLabel.textContent = q.value; };
+
+    go.onclick = async function () {
+        if (!file) { setStatus('Сначала кинь файл!'); return; }
+        var level = parseInt(q.value, 10);
+        go.disabled = true;
+        setStatus('УНИЧТОЖАЮ...');
+        out.classList.remove('show');
+        try {
+            var t = (file.type || '').split('/')[0];
+            var res;
+            if (t === 'image') res = await shakalImage(file, level);
+            else if (t === 'video') res = await shakalVideo(file, level);
+            else if (t === 'audio') res = await shakalAudio(file, level);
+            else throw new Error('Неизвестный тип файла: ' + file.type);
+            showResult(res);
+            setStatus('Готово. Качество уничтожено. 💀');
+        } catch (e) {
+            setStatus('Ошибка: ' + (e && e.message ? e.message : e));
+        } finally {
+            go.disabled = false;
+        }
+    };
+
+    function showResult(res) {
+        preview.innerHTML = '';
+        var url = URL.createObjectURL(res.blob);
+        if (res.kind === 'image') {
+            var img = document.createElement('img'); img.src = url; img.alt = 'shakal'; preview.appendChild(img);
+            dl.download = 'shakal.jpg';
+        } else if (res.kind === 'video') {
+            var v = document.createElement('video'); v.src = url; v.controls = true; v.loop = true; v.autoplay = true; preview.appendChild(v);
+            dl.download = 'shakal.webm';
+        } else {
+            var a = document.createElement('audio'); a.src = url; a.controls = true; preview.appendChild(a);
+            dl.download = 'shakal.wav';
+        }
+        dl.href = url;
+        out.classList.add('show');
+    }
+
+    // ---------- ФОТО ----------
+    function shakalImage(f, level) {
+        return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onerror = function () { reject(new Error('Не удалось открыть картинку')); };
+            img.onload = function () {
+                var div = 2 + level * 3;                   // 5..32
+                var w = Math.max(8, Math.floor(img.width / div));
+                var h = Math.max(8, Math.floor(img.height / div));
+                var c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                c.getContext('2d').drawImage(img, 0, 0, w, h);
+                var quality = Math.max(0.01, 0.06 - level * 0.005); // 0.01..0.055
+                c.toBlob(function (b) {
+                    if (b) resolve({ kind: 'image', blob: b });
+                    else resolve({ kind: 'image', blob: dataURLtoBlob(c.toDataURL('image/jpeg', 0.01)) });
+                }, 'image/jpeg', quality);
+            };
+            img.src = URL.createObjectURL(f);
+        });
+    }
+
+    function dataURLtoBlob(d) {
+        var parts = d.split(',');
+        var mime = parts[0].match(/:(.*?);/)[1];
+        var bin = atob(parts[1]);
+        var arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return new Blob([arr], { type: mime });
+    }
+
+    // ---------- ВИДЕО ----------
+    function shakalVideo(f, level) {
+        return new Promise(function (resolve, reject) {
+            var v = document.createElement('video');
+            v.src = URL.createObjectURL(f);
+            v.muted = false;
+            v.playsInline = true;
+            v.onerror = function () { reject(new Error('Не удалось открыть видео')); };
+            v.onloadedmetadata = function () {
+                var scale = 1 / (4 + level * 2);           // 6..24
+                var w = Math.max(32, Math.floor((v.videoWidth || 320) * scale));
+                var h = Math.max(32, Math.floor((v.videoHeight || 240) * scale));
+                var c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                var ctx = c.getContext('2d');
+                var stream = c.captureStream(12);
+                try {
+                    var ac = new (window.AudioContext || window.webkitAudioContext)();
+                    var src = ac.createMediaElementSource(v);
+                    var dest = ac.createMediaStreamDestination();
+                    src.connect(dest);
+                    dest.stream.getAudioTracks().forEach(function (t) { stream.addTrack(t); });
+                } catch (_) { }
+                var bitrate = 30000 + level * 8000;       // 38..110 kbps
+                var mime = (window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm;codecs=vp8'))
+                    ? 'video/webm;codecs=vp8' : 'video/webm';
+                var rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bitrate });
+                var chunks = [];
+                rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+                rec.onstop = function () {
+                    resolve({ kind: 'video', blob: new Blob(chunks, { type: 'video/webm' }) });
+                };
+                rec.start();
+                v.play().catch(function () {});
+                var draw = setInterval(function () { try { ctx.drawImage(v, 0, 0, w, h); } catch (_) {} }, 1000 / 12);
+                v.onended = function () { clearInterval(draw); try { rec.stop(); } catch (_) {} };
+                setTimeout(function () {
+                    if (v.duration && !v.ended) { clearInterval(draw); try { rec.stop(); } catch (_) {} }
+                }, 120000);
+            };
+            v.load();
+        });
+    }
+
+    // ---------- ЗВУК ----------
+    function shakalAudio(f, level) {
+        return new Promise(function (resolve, reject) {
+            var Ctx = window.AudioContext || window.webkitAudioContext;
+            var ac = new Ctx();
+            f.arrayBuffer().then(function (buf) {
+                return new Promise(function (res, rej) {
+                    ac.decodeAudioData(buf, res, function () { rej(new Error('Не удалось декодировать звук')); });
+                });
+            }).then(function (audio) {
+                var rate = Math.max(3000, 11000 - level * 900);   // 2..10 кГц
+                var src = audio.getChannelData(0);
+                var step = Math.max(1, Math.round(audio.sampleRate / rate));
+                var outLen = Math.floor(src.length / step);
+                var samples = new Uint8Array(outLen);
+                var peak = 1;
+                for (var i = 0; i < outLen; i++) {
+                    var s = src[i * step];
+                    if (Math.abs(s) > peak) peak = Math.abs(s);
+                    samples[i] = Math.max(0, Math.min(255, Math.round(128 + s * 127)));
+                }
+                resolve({ kind: 'audio', blob: encodeWav(samples, Math.round(audio.sampleRate / step)) });
+            }).catch(function (e) { reject(e); });
+        });
+    }
+
+    function encodeWav(samples, sampleRate) {
+        var buf = new ArrayBuffer(44 + samples.length);
+        var v = new DataView(buf);
+        function str(off, s) { for (var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
+        str(0, 'RIFF'); v.setUint32(4, 36 + samples.length, true); str(8, 'WAVE');
+        str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+        v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+        str(36, 'data'); v.setUint32(40, samples.length, true);
+        for (var i = 0; i < samples.length; i++) v.setUint8(44 + i, samples[i]);
+        return new Blob([buf], { type: 'audio/wav' });
+    }
+})();
+</script>
+</body>
+</html>
