@@ -1,6 +1,6 @@
 // NoName Chatter — service worker для push-уведомлений (FCM)
-importScripts('vendor/firebase-app-compat.js');
-importScripts('vendor/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
 firebase.initializeApp({
         apiKey: "AIzaSyAUF83tupFi-fptxsLKNdCgFw4lgInt_zU",
