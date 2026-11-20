@@ -84,6 +84,11 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
   border:3px solid #000;background:rgba(255,255,255,.06);color:#d8cfff;box-shadow:3px 3px 0 #000;transition:.12s}
 .chip:hover{transform:translateY(-2px);color:#fff;border-color:#ff2ec4}
 .chip.on{background:linear-gradient(135deg,#ffe600,#ff2ec4);color:#000;transform:rotate(-2deg);animation:wobble 3s ease-in-out infinite}
+.bass-row,.fmt-row{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 16px;font-size:17px;font-weight:900}
+.bass-row input{width:min(280px,58vw);accent-color:#00ffa3;height:24px}
+#bassLabel{color:#00ffa3;min-width:56px;text-shadow:2px 2px 0 #000}
+.fmt-row select{font:inherit;font-size:16px;font-weight:800;padding:8px 14px;border-radius:11px;
+  border:3px solid #000;background:#1a1030;color:#fff;cursor:pointer;box-shadow:3px 3px 0 #000}
 
 .go{
   font:inherit;font-size:24px;font-weight:900;padding:18px 30px;border:5px solid #000;border-radius:18px;
@@ -135,7 +140,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
   <div class="ctrl" id="ctrl">
     <div class="qrow">
       <span>ШАКАЛ:</span>
-      <input type="range" id="q" min="1" max="10" value="7">
+      <input type="range" id="q" min="0" max="10" value="7">
       <span id="qLabel">7</span>
     </div>
     <div class="emoji-row" id="qDesc">умеренный шакал</div>
@@ -152,6 +157,19 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
       <button class="chip" data-style="wave">Волна</button>
       <button class="chip" data-style="bit8">Пиксель-арт</button>
       <button class="chip" data-style="mono">Моно</button>
+    </div>
+    <div class="bass-row" id="bassRow" style="display:none">
+      <span>БАСБУСТ:</span>
+      <input type="range" id="bass" min="0" max="100" value="0">
+      <span id="bassLabel">0%</span>
+    </div>
+    <div class="fmt-row" id="fmtRow" style="display:none">
+      <span>ФОРМАТ:</span>
+      <select id="fmt">
+        <option value="wav">WAV</option>
+        <option value="mp3">MP3</option>
+        <option value="webm">WebM (Opus)</option>
+      </select>
     </div>
     <button class="go" id="go">ШАКАЛИЗИРОВАТЬ</button>
   </div>
@@ -185,7 +203,22 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     var dl = document.getElementById('dl');
     var file = null;
 
-    var DESCS = ['', 'почти нормально', 'лёгкий шакал', 'шакал просыпается', 'шакал набирает силу', 'умеренный шакал', 'чёткий шакал', 'жёсткий шакал', 'шакал-мама', 'тотальный шакал', 'ШАКАЛ БОГ'];
+    // басбуст — только для ника PriwetAAAAA
+    var bassEl = document.getElementById('bass');
+    var bassLabel = document.getElementById('bassLabel');
+    var bassRow = document.getElementById('bassRow');
+    var fmtEl = document.getElementById('fmt');
+    var fmtRow = document.getElementById('fmtRow');
+    var isSpecial = false;
+    try {
+        var su = JSON.parse(localStorage.getItem('steam_user') || 'null');
+        var nm = su ? String(su.name || su.id || '').toLowerCase() : '';
+        isSpecial = nm.indexOf('priwet') === 0;
+    } catch (_) {}
+    if (isSpecial && bassRow) bassRow.style.display = 'flex';
+    if (bassEl) bassEl.oninput = function () { bassLabel.textContent = bassEl.value + '%'; };
+
+    var DESCS = ['без шакала', 'почти нормально', 'лёгкий шакал', 'шакал просыпается', 'шакал набирает силу', 'умеренный шакал', 'чёткий шакал', 'жёсткий шакал', 'шакал-мама', 'тотальный шакал', 'ШАКАЛ БОГ'];
     var STYLES = {
         classic:  { name: 'Классика' },
         vhs:      { name: 'VHS', rgbShift: 3, scan: 2, track: 1, wobble: 2, sat: 1.15, con: 1.05, extraQ: 0.01 },
@@ -220,6 +253,8 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
         file = f;
         out.classList.remove('show');
         ctrl.classList.add('show');
+        var t0 = (f.type || '').split('/')[0];
+        if (fmtRow) fmtRow.style.display = t0 === 'audio' ? 'flex' : 'none';
         setStatus('Файл: ' + f.name + ' (' + Math.round(f.size / 1024) + ' КБ)');
     }
 
@@ -265,7 +300,8 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             dl.download = 'shakal.webm';
         } else {
             var a = document.createElement('audio'); a.src = url; a.controls = true; preview.appendChild(a);
-            dl.download = 'shakal.wav';
+            var tt = res.blob.type || '';
+            dl.download = tt.indexOf('mpeg') >= 0 ? 'shakal.mp3' : (tt.indexOf('webm') >= 0 ? 'shakal.webm' : 'shakal.wav');
         }
         dl.href = url;
         out.classList.add('show');
@@ -281,7 +317,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
                 var c;
                 try { c = renderByStyle(img, st, level); }
                 catch (e) { reject(e); return; }
-                var quality = Math.max(0.01, 0.06 - level * 0.005 - (st.extraQ || 0));
+                var quality = level === 0 ? 0.95 : Math.max(0.01, 0.06 - level * 0.005 - (st.extraQ || 0));
                 c.toBlob(function (b) {
                     if (b) resolve({ kind: 'image', blob: b });
                     else resolve({ kind: 'image', blob: dataURLtoBlob(c.toDataURL('image/jpeg', 0.01)) });
@@ -390,7 +426,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     }
 
     function renderShakal(img, st, level) {
-        var div = 2 + level * 3 + (st.extraDiv || 0);
+        var div = level === 0 ? 1 : 2 + level * 3 + (st.extraDiv || 0);
         var w = Math.max(8, Math.floor(img.width / div));
         var h = Math.max(8, Math.floor(img.height / div));
         var small = document.createElement('canvas');
@@ -541,7 +577,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             v.playsInline = true;
             v.onerror = function () { reject(new Error('Не удалось открыть видео')); };
             v.onloadedmetadata = function () {
-                var scale = 1 / (4 + level * 2);
+                var scale = level === 0 ? 1 : 1 / (4 + level * 2);
                 var w = Math.max(32, Math.floor((v.videoWidth || 320) * scale));
                 var h = Math.max(32, Math.floor((v.videoHeight || 240) * scale));
                 var c = document.createElement('canvas');
@@ -552,13 +588,21 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
                     var ac = new (window.AudioContext || window.webkitAudioContext)();
                     var src = ac.createMediaElementSource(v);
                     var dest = ac.createMediaStreamDestination();
-                    src.connect(dest);
+                    var bassGain = isSpecial && bassEl ? (parseInt(bassEl.value, 10) / 100) * 24 : 0;
+                    var vBass = ac.createBiquadFilter();
+                    vBass.type = 'lowshelf'; vBass.frequency.value = 140; vBass.gain.value = bassGain;
+                    var vCrush = ac.createWaveShaper();
+                    vCrush.curve = makeCrushCurve(level === 0 ? 1000 : 2 + level * 2.2);
+                    var vLow = ac.createBiquadFilter();
+                    vLow.type = 'lowpass';
+                    vLow.frequency.value = level === 0 ? 20000 : Math.max(2000, 12000 - level * 900);
+                    src.connect(vBass); vBass.connect(vCrush); vCrush.connect(vLow); vLow.connect(dest);
                     dest.stream.getAudioTracks().forEach(function (t) { stream.addTrack(t); });
                 } catch (_) { }
-                var bitrate = 30000 + level * 8000;
+                var bitrate = level === 0 ? 4000000 : 30000 + level * 8000;
                 var mime = (window.MediaRecorder && MediaRecorder.isTypeSupported('video/webm;codecs=vp8'))
                     ? 'video/webm;codecs=vp8' : 'video/webm';
-                var rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bitrate });
+                var rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bitrate, audioBitsPerSecond: level === 0 ? 128000 : 12000 + level * 2000 });
                 var chunks = [];
                 rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
                 rec.onstop = function () { resolve({ kind: 'video', blob: new Blob(chunks, { type: 'video/webm' }) }); };
@@ -594,30 +638,125 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
                     ac.decodeAudioData(buf, res, function () { rej(new Error('Не удалось декодировать звук')); });
                 });
             }).then(function (audio) {
-                var rate = Math.max(3000, 11000 - level * 900);
+                var bassGain = isSpecial && bassEl ? (parseInt(bassEl.value, 10) / 100) * 24 : 0;
+                if (bassGain > 0) {
+                    var off = new OfflineAudioContext(1, audio.length, audio.sampleRate);
+                    var bsrc = off.createBufferSource();
+                    bsrc.buffer = audio;
+                    var bf = off.createBiquadFilter();
+                    bf.type = 'lowshelf'; bf.frequency.value = 140; bf.gain.value = bassGain;
+                    bsrc.connect(bf); bf.connect(off.destination); bsrc.start();
+                    return off.startRendering();
+                }
+                return audio;
+            }).then(function (audio) {
+                var fmt = (fmtEl && fmtEl.value) || 'wav';
                 var src = audio.getChannelData(0);
+                var rate = sampleRateSafe(audio.sampleRate, level, fmt);
                 var step = Math.max(1, Math.round(audio.sampleRate / rate));
                 var outLen = Math.floor(src.length / step);
-                var samples = new Uint8Array(outLen);
-                for (var i = 0; i < outLen; i++) {
-                    var s = src[i * step] || 0;
-                    samples[i] = Math.max(0, Math.min(255, Math.round(128 + s * 127)));
-                }
-                resolve({ kind: 'audio', blob: encodeWav(samples, Math.round(audio.sampleRate / step)) });
+                var samples = new Float32Array(outLen);
+                for (var i = 0; i < outLen; i++) samples[i] = src[i * step] || 0;
+                var outRate = Math.round(audio.sampleRate / step);
+                if (fmt === 'mp3') return encodeMp3(samples, outRate);
+                if (fmt === 'webm') return encodeWebm(samples, outRate);
+                return Promise.resolve(encodeWav(samples, outRate, level === 0 ? 16 : 8));
+            }).then(function (blob) {
+                resolve({ kind: 'audio', blob: blob });
             }).catch(function (e) { reject(e); });
         });
     }
 
-    function encodeWav(samples, sampleRate) {
-        var buf = new ArrayBuffer(44 + samples.length);
+    function sampleRateSafe(nativeRate, level, fmt) {
+        var r = level === 0 ? nativeRate : Math.max(3000, 11000 - level * 900);
+        if (fmt === 'mp3') {
+            if (r <= 8000) r = 8000;
+            else if (r <= 11025) r = 11025;
+            else if (r <= 12000) r = 12000;
+            else if (r <= 16000) r = 16000;
+            else if (r <= 22050) r = 22050;
+            else r = Math.min(44100, r);
+        }
+        return Math.min(nativeRate, Math.max(3000, r));
+    }
+
+    function encodeWav(samples, sampleRate, bits) {
+        bits = bits || 8;
+        var bps = bits / 8;
+        var buf = new ArrayBuffer(44 + samples.length * bps);
         var v = new DataView(buf);
         function str(off, s) { for (var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
-        str(0, 'RIFF'); v.setUint32(4, 36 + samples.length, true); str(8, 'WAVE');
+        str(0, 'RIFF'); v.setUint32(4, 36 + samples.length * bps, true); str(8, 'WAVE');
         str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-        v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
-        str(36, 'data'); v.setUint32(40, samples.length, true);
-        for (var i = 0; i < samples.length; i++) v.setUint8(44 + i, samples[i]);
+        v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * bps, true); v.setUint16(32, bps, true); v.setUint16(34, bits, true);
+        str(36, 'data'); v.setUint32(40, samples.length * bps, true);
+        for (var i = 0; i < samples.length; i++) {
+            var s = Math.max(-1, Math.min(1, samples[i]));
+            if (bits === 8) v.setUint8(44 + i, 128 + Math.round(s * 127));
+            else v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
         return new Blob([buf], { type: 'audio/wav' });
+    }
+
+    function makeCrushCurve(k) {
+        var n = 1024, curve = new Float32Array(n);
+        for (var i = 0; i < n; i++) {
+            var x = (i / (n - 1)) * 2 - 1;
+            curve[i] = Math.round(x * k) / k;
+        }
+        return curve;
+    }
+
+    function loadLame() {
+        return new Promise(function (res, rej) {
+            if (window.lamejs) return res(window.lamejs);
+            var s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
+            s.onload = function () { window.lamejs ? res(window.lamejs) : rej(new Error('MP3-энкодер не загрузился')); };
+            s.onerror = function () { rej(new Error('MP3-энкодер не загрузился')); };
+            document.head.appendChild(s);
+        });
+    }
+
+    function encodeMp3(samples, rate) {
+        return loadLame().then(function (lamejs) {
+            var enc = new lamejs.Mp3Encoder(1, rate, 64);
+            var int16 = new Int16Array(samples.length);
+            for (var i = 0; i < samples.length; i++) {
+                var s = Math.max(-1, Math.min(1, samples[i]));
+                int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+            }
+            var parts = [], block = 1152;
+            for (var j = 0; j < int16.length; j += block) {
+                var mp3 = enc.encodeBuffer(int16.subarray(j, j + block));
+                if (mp3.length) parts.push(mp3);
+            }
+            var end = enc.flush();
+            if (end.length) parts.push(end);
+            return new Blob(parts, { type: 'audio/mpeg' });
+        });
+    }
+
+    function encodeWebm(samples, rate) {
+        return new Promise(function (res, rej) {
+            try {
+                var Ctx = window.AudioContext || window.webkitAudioContext;
+                var ctx = new Ctx();
+                var buf = ctx.createBuffer(1, samples.length, rate);
+                buf.getChannelData(0).set(samples);
+                var src = ctx.createBufferSource();
+                src.buffer = buf;
+                var dest = ctx.createMediaStreamDestination();
+                src.connect(dest);
+                var rec = new MediaRecorder(dest.stream, { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 16000 });
+                var chunks = [];
+                rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+                rec.onstop = function () { try { ctx.close(); } catch (_) {} res(new Blob(chunks, { type: 'audio/webm' })); };
+                src.onended = function () { try { rec.stop(); } catch (_) {} };
+                rec.start();
+                src.start();
+            } catch (e) { rej(e); }
+        });
     }
 })();
 </script>
