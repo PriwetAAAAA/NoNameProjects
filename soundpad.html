@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>САУНДПАД — NoName</title>
+<link rel="icon" href="mascot.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  background:#05060f;color:#e8ecff;overflow-x:hidden;
+  background-image:radial-gradient(circle at 12% 8%, rgba(124,60,255,.28), transparent 45%),
+                   radial-gradient(circle at 88% 20%, rgba(0,255,213,.18), transparent 45%),
+                   radial-gradient(circle at 50% 105%, rgba(255,46,196,.2), transparent 50%);
+}
+nav{display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;padding:16px 18px}
+nav a{color:#9fb0e8;text-decoration:none;font-weight:700;font-size:14px}
+nav a:hover{color:#fff}
+.brand{color:#fff;font-weight:900;letter-spacing:.5px}
+main{max-width:1100px;margin:0 auto;padding:0 18px 60px}
+h1{text-align:center;font-size:clamp(30px,6vw,54px);font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(90deg,#7ec8ff,#a78bfa,#ff2ec4);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 24px rgba(124,60,255,.4))}
+.sub{text-align:center;color:#9aa8d8;font-size:14px;margin:8px 0 20px}
+
+.bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
+.bar button,.bar label{font:inherit;font-size:13px;font-weight:800;padding:10px 16px;border-radius:12px;cursor:pointer;
+  border:2px solid rgba(124,60,255,.45);background:rgba(20,16,44,.7);color:#dfe6ff;transition:.15s}
+.bar button:hover{border-color:#7ec8ff;color:#fff;background:rgba(40,30,90,.8)}
+.bar button.primary{background:linear-gradient(135deg,#7ec8ff,#a78bfa);border-color:transparent;color:#04030f}
+.bar button.danger{border-color:rgba(255,46,196,.6);color:#ff8fd8}
+.bar label{display:flex;align-items:center;gap:8px;cursor:default}
+.bar input[type=range]{width:110px;accent-color:#7ec8ff}
+.status{text-align:center;color:#00ffd5;font-size:13px;font-weight:700;min-height:18px;margin-bottom:12px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.pad{position:relative;aspect-ratio:1;border-radius:16px;cursor:pointer;overflow:hidden;text-align:left;
+  border:2px solid rgba(124,60,255,.3);background:rgba(18,14,40,.72);color:#dfe6ff;
+  display:flex;flex-direction:column;justify-content:flex-end;padding:10px;transition:transform .1s,border-color .15s,box-shadow .15s}
+.pad:hover{border-color:rgba(126,200,255,.7)}
+.pad:active,.pad.play{transform:scale(.96);border-color:#00ffd5;box-shadow:0 0 26px rgba(0,255,213,.5)}
+.pad.empty{border-style:dashed;opacity:.55}
+.pad.empty:hover{opacity:.9}
+.pad .key{position:absolute;top:8px;left:10px;font-size:12px;font-weight:900;color:#7e8bc0}
+.pad .nm{font-size:12px;font-weight:800;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.pad .hint{font-size:11px;color:#6b74a0;font-weight:700}
+.pad.play::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(0,255,213,.35),transparent 70%)}
+.mobile-note{display:none;text-align:center;color:#7e8bc0;font-size:12px;margin-top:18px}
+@media(max-width:560px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+  .bar button,.bar label{padding:9px 12px;font-size:12px}
+  .mobile-note{display:block}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="index.html">NoName</a>
+  <a href="programs.html">← приложения</a>
+</nav>
+<main>
+  <h1>САУНДПАД</h1>
+  <p class="sub">кинь звуки или целую папку → играй кнопками → отправь на телефон одним файлом</p>
+
+  <div class="bar">
+    <button class="primary" id="syncBtn">🔗 СИНХРО</button>
+    <button class="primary" id="loadBtn">+ ЗВУКИ</button>
+    <button id="folderBtn">+ ПАПКА</button>
+    <button id="expBtn">ЭКСПОРТ</button>
+    <button id="impBtn">ИМПОРТ</button>
+    <button class="danger" id="stopBtn">СТОП</button>
+    <label>🔊 <input type="range" id="vol" min="0" max="100" value="100"></label>
+    <input type="file" id="files" multiple accept="audio/*" hidden>
+    <input type="file" id="folder" webkitdirectory hidden>
+    <input type="file" id="impFile" accept=".nnsound,application/json" hidden>
+  </div>
+  <div class="status" id="status"></div>
+
+  <div class="grid" id="grid"></div>
+  <p class="mobile-note">на телефоне жми пады пальцем · на ПК — клавишами 1-9, Q-P, A-L, Z-M</p>
+</main>
+
+<script>
+(function () {
+    var SLOTS = 24;
+    var KEYS = '1234567890qwertyuiopasdfghjklzxcvbnm'.split('');
+    var pads = new Array(SLOTS).fill(null);
+    var players = [];
+    var db = null;
+
+    var grid = document.getElementById('grid');
+    var vol = document.getElementById('vol');
+    var statusEl = document.getElementById('status');
+    function setStatus(s) { if (statusEl) statusEl.textContent = s || ''; }
+
+    // ---------- IndexedDB ----------
+    function openDb() {
+        return new Promise(function (res) {
+            try {
+                var r = indexedDB.open('nnsoundpad', 1);
+                r.onupgradeneeded = function () { if (!r.result.objectStoreNames.contains('pads')) r.result.createObjectStore('pads'); };
+                r.onsuccess = function () { db = r.result; res(db); };
+                r.onerror = function () { res(null); };
+            } catch (_) { res(null); }
+        });
+    }
+    function savePad(i) {
+        if (!db) return;
+        try {
+            var tx = db.transaction('pads', 'readwrite');
+            tx.objectStore('pads').put(pads[i], i);
+        } catch (_) {}
+    }
+    function loadPads() {
+        return new Promise(function (res) {
+            if (!db) { res(); return; }
+            try {
+                var tx = db.transaction('pads', 'readonly');
+                var req = tx.objectStore('pads').getAll();
+                var keysReq = tx.objectStore('pads').getAllKeys();
+                tx.oncomplete = function () {
+                    var vals = req.result || [];
+                    var keys = keysReq.result || [];
+                    for (var k = 0; k < keys.length; k++) {
+                        if (keys[k] >= 0 && keys[k] < SLOTS) pads[keys[k]] = vals[k];
+                    }
+                    res();
+                };
+            } catch (_) { res(); }
+        });
+    }
+
+    // ---------- рендер ----------
+    function render() {
+        grid.innerHTML = '';
+        for (var i = 0; i < SLOTS; i++) {
+            (function (i) {
+                var p = pads[i];
+                var b = document.createElement('button');
+                b.className = 'pad' + (p ? '' : ' empty');
+                b.setAttribute('data-i', i);
+                b.innerHTML = '<span class="key">' + (KEYS[i] || '').toUpperCase() + '</span>'
+                    + (p ? '<span class="nm"></span>' : '<span class="hint">+ звук</span>');
+                if (p) b.querySelector('.nm').textContent = p.name;
+                b.onclick = function () { p ? play(i) : addOne(i); };
+                grid.appendChild(b);
+            })(i);
+        }
+    }
+
+    // ---------- воспроизведение ----------
+    function play(i) {
+        var p = pads[i];
+        if (!p || !p.data) return;
+        try {
+            var a = new Audio(p.data);
+            a.volume = vol.value / 100;
+            a.play().catch(function () {});
+            players.push(a);
+            a.onended = function () {
+                var idx = players.indexOf(a);
+                if (idx >= 0) players.splice(idx, 1);
+            };
+        } catch (_) {}
+        var el = grid.querySelector('[data-i="' + i + '"]');
+        if (el) {
+            el.classList.add('play');
+            setTimeout(function () { el.classList.remove('play'); }, 200);
+        }
+    }
+    function stopAll() {
+        for (var k = 0; k < players.length; k++) {
+            try { players[k].pause(); players[k].currentTime = 0; } catch (_) {}
+        }
+        players = [];
+    }
+
+    // ---------- синхронизация с ПК ----------
+    function syncFromPc() {
+        var base = prompt('Адрес сервера с ПК (например http://192.168.1.5:7777):', localStorage.getItem('nnsp_srv') || '');
+        if (!base) return;
+        base = String(base).trim().replace(/\/+$/, '');
+        if (!/^https?:\/\//i.test(base)) base = 'http://' + base;
+        localStorage.setItem('nnsp_srv', base);
+        setStatus('Синхронизация с ' + base + '…');
+        fetch(base + '/pack').then(function (r) { return r.json(); }).then(function (pack) {
+            if (!pack || !pack.pads) throw new Error('пустой ответ');
+            for (var i = 0; i < SLOTS; i++) {
+                if (pack.pads[i]) {
+                    pads[i] = { name: pack.pads[i].name, data: base + pack.pads[i].url };
+                    savePad(i);
+                }
+            }
+            render();
+            setStatus('Синхронизировано: ' + pack.pads.length + ' звуков');
+        }).catch(function (e) {
+            setStatus('Ошибка синхры: ' + (e && e.message ? e.message : e));
+        });
+    }
+
+    // ---------- загрузка ----------
+    function isAudio(f) {
+        return /^audio\//.test(f.type || '') || /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|webm)$/i.test(f.name || '');
+    }
+    function addFiles(list) {
+        var files = Array.prototype.slice.call(list).filter(isAudio);
+        if (!files.length) { alert('Не нашёл аудиофайлов'); return; }
+        var start = 0;
+        while (start < SLOTS && pads[start]) start++;
+        files.forEach(function (f, k) {
+            var idx = start + k;
+            if (idx >= SLOTS) return;
+            var reader = new FileReader();
+            reader.onload = function () {
+                pads[idx] = { name: f.name.replace(/\.[^.]+$/, ''), data: reader.result };
+                savePad(idx);
+                render();
+            };
+            reader.readAsDataURL(f);
+        });
+    }
+    function addOne(i) {
+        var inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = 'audio/*';
+        inp.onchange = function () {
+            if (!inp.files || !inp.files[0]) return;
+            var f = inp.files[0];
+            var reader = new FileReader();
+            reader.onload = function () {
+                pads[i] = { name: f.name.replace(/\.[^.]+$/, ''), data: reader.result };
+                savePad(i);
+                render();
+            };
+            reader.readAsDataURL(f);
+        };
+        inp.click();
+    }
+
+    // ---------- pack ----------
+    function makePackBlob() {
+        return new Blob([JSON.stringify({ v: 1, pads: pads })], { type: 'application/json' });
+    }
+    function exportPack() {
+        var blob = makePackBlob();
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'soundpad.nnsound';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { a.remove(); URL.revokeObjectURL(a.href); }, 1000);
+    }
+    function sharePack() {
+        var blob = makePackBlob();
+        try {
+            var f = new File([blob], 'soundpad.nnsound', { type: 'application/json' });
+            if (navigator.canShare && navigator.canShare({ files: [f] })) {
+                navigator.share({ files: [f], title: 'Мой саундпад' }).catch(function () { exportPack(); });
+                return;
+            }
+        } catch (_) {}
+        exportPack();
+    }
+    function importPack(file) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            try {
+                var pack = JSON.parse(reader.result);
+                if (!pack || !pack.pads) throw new Error('bad');
+                pads = new Array(SLOTS).fill(null);
+                for (var i = 0; i < SLOTS; i++) if (pack.pads[i]) pads[i] = pack.pads[i];
+                for (var k = 0; k < SLOTS; k++) savePad(k);
+                render();
+            } catch (_) { alert('Некорректный файл саундпада'); }
+        };
+        reader.readAsText(file);
+    }
+
+    // ---------- события ----------
+    document.getElementById('syncBtn').onclick = syncFromPc;
+    document.getElementById('loadBtn').onclick = function () { document.getElementById('files').click(); };
+    document.getElementById('folderBtn').onclick = function () { document.getElementById('folder').click(); };
+    document.getElementById('files').onchange = function () { addFiles(this.files); this.value = ''; };
+    document.getElementById('folder').onchange = function () { addFiles(this.files); this.value = ''; };
+    document.getElementById('expBtn').onclick = function () {
+        if (navigator.share) sharePack(); else exportPack();
+    };
+    document.getElementById('impBtn').onclick = function () { document.getElementById('impFile').click(); };
+    document.getElementById('impFile').onchange = function () {
+        if (this.files && this.files[0]) importPack(this.files[0]);
+        this.value = '';
+    };
+    document.getElementById('stopBtn').onclick = stopAll;
+
+    // drag & drop на всю страницу
+    ['dragover', 'drop'].forEach(function (ev) {
+        document.addEventListener(ev, function (e) {
+            e.preventDefault();
+            if (ev === 'drop' && e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+        });
+    });
+
+    // клавиатура
+    var keyMap = {};
+    KEYS.forEach(function (k, i) { keyMap[k] = i; });
+    document.addEventListener('keydown', function (e) {
+        if (e.repeat) return;
+        var tag = (e.target && e.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+        var i = keyMap[(e.key || '').toLowerCase()];
+        if (typeof i === 'number' && pads[i]) { play(i); e.preventDefault(); }
+    });
+
+    // ---------- старт ----------
+    openDb().then(loadPads).then(function () { render(); });
+})();
+</script>
+</body>
+</html>
