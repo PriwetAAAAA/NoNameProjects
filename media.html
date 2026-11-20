@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скачать медиа — NoName</title>
+<link rel="icon" href="mascot.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:#05060f;color:#e8ecff;min-height:100vh;
+  background-image:radial-gradient(circle at 15% 10%, rgba(124,60,255,.3), transparent 45%),
+                   radial-gradient(circle at 85% 15%, rgba(0,200,255,.2), transparent 45%),
+                   radial-gradient(circle at 50% 100%, rgba(255,46,196,.18), transparent 55%)}
+nav{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:16px 18px}
+nav a{color:#9fb0e8;text-decoration:none;font-weight:700;font-size:14px}
+nav a:hover{color:#fff}
+.brand{color:#fff;font-weight:900}
+main{max-width:900px;margin:0 auto;padding:10px 18px 80px}
+h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(90deg,#7ec8ff,#a78bfa,#ff2ec4);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 22px rgba(124,60,255,.4))}
+.sub{text-align:center;color:#9aa8d8;font-size:14px;margin:10px 0 22px;line-height:1.6}
+.box{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.box input{flex:1;min-width:220px;font:inherit;font-size:15px;padding:14px 16px;border-radius:12px;
+  border:2px solid rgba(124,60,255,.45);background:rgba(18,14,40,.8);color:#fff;outline:none}
+.box input:focus{border-color:#7ec8ff}
+.box button{font:inherit;font-size:15px;font-weight:800;padding:14px 22px;border-radius:12px;cursor:pointer;border:none;
+  background:linear-gradient(135deg,#7ec8ff,#a78bfa);color:#04030f}
+.box button:hover{filter:brightness(1.1)}
+.box button:disabled{opacity:.5;cursor:wait}
+.opts{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:#9aa8d8;margin-bottom:20px}
+.opts label{display:flex;align-items:center;gap:6px}
+.opts input,.opts select{font:inherit;font-size:13px;padding:7px 10px;border-radius:9px;border:1px solid rgba(124,60,255,.4);
+  background:rgba(18,14,40,.8);color:#dfe6ff}
+.status{text-align:center;color:#00ffd5;font-size:13px;font-weight:700;min-height:18px;margin-bottom:14px}
+.card{display:none;gap:16px;padding:16px;border-radius:16px;background:rgba(18,14,40,.75);
+  border:2px solid rgba(124,60,255,.35);margin-bottom:16px}
+.card.show{display:flex}
+.card img{width:180px;border-radius:10px;flex-shrink:0;object-fit:cover}
+.card .meta{flex:1;min-width:0}
+.card h3{font-size:16px;margin-bottom:6px;word-break:break-word}
+.card p{font-size:13px;color:#9aa8d8;margin-bottom:4px}
+.formats{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.fmt{font:inherit;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer;
+  border:2px solid rgba(124,60,255,.45);background:rgba(30,24,60,.8);color:#dfe6ff}
+.fmt:hover{border-color:#00ffd5;color:#fff}
+.fmt.audio{border-color:rgba(255,230,0,.4)}
+.hint{text-align:center;color:#6f7aab;font-size:12px;margin-top:30px;line-height:1.8}
+@media(max-width:560px){.card{flex-direction:column}.card img{width:100%;height:160px}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="index.html">NoName</a>
+  <a href="programs.html">← приложения</a>
+</nav>
+<main>
+  <h1>СКАЧАТЬ МЕДИА</h1>
+  <p class="sub">YouTube · Shorts · TikTok · Instagram · Twitter/X · VK Видео · OK.ru · Rutube · Dzen · Twitch · Reddit · Pinterest · Facebook · SoundCloud · Boosty</p>
+
+  <div class="box">
+    <input id="url" type="text" placeholder="Вставь ссылку (https://...)">
+    <button id="check">Проверить</button>
+  </div>
+
+  <div class="opts">
+    <label>Сервер: <input id="srv" type="text" style="width:210px"></label>
+    <label>Качество:
+      <select id="q">
+        <option value="best">Лучшее</option>
+        <option value="1080">1080p</option>
+        <option value="720">720p</option>
+        <option value="480">480p</option>
+        <option value="audio">Только звук (mp3)</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div class="card" id="card">
+    <img id="thumb" alt="">
+    <div class="meta">
+      <h3 id="title"></h3>
+      <p id="dur"></p>
+      <p id="src"></p>
+      <div class="formats" id="fmts"></div>
+    </div>
+  </div>
+
+  <p class="hint">Скачивание работает через локальный сервер (yt-dlp).<br>Запусти <b>media-server</b> на ПК и укажи его адрес выше.</p>
+</main>
+
+<script>
+(function () {
+    var urlEl = document.getElementById('url');
+    var srvEl = document.getElementById('srv');
+    var qEl = document.getElementById('q');
+    var checkBtn = document.getElementById('check');
+    var statusEl = document.getElementById('status');
+    var card = document.getElementById('card');
+    var thumb = document.getElementById('thumb');
+    var titleEl = document.getElementById('title');
+    var durEl = document.getElementById('dur');
+    var srcEl = document.getElementById('src');
+    var fmts = document.getElementById('fmts');
+    var current = null;
+
+    srvEl.value = localStorage.getItem('nn_media_srv') || 'http://localhost:8088';
+    srvEl.onchange = function () { localStorage.setItem('nn_media_srv', srvEl.value); };
+
+    function srv() { return srvEl.value.replace(/\/+$/, ''); }
+    function setStatus(s) { statusEl.textContent = s || ''; }
+    function fmtTime(t) {
+        if (!t) return '';
+        t = Math.round(t);
+        var m = Math.floor(t / 60), s = t % 60;
+        return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    checkBtn.onclick = function () {
+        var u = urlEl.value.trim();
+        if (!u) { setStatus('Вставь ссылку'); return; }
+        card.classList.remove('show');
+        checkBtn.disabled = true;
+        setStatus('Проверяю…');
+        fetch(srv() + '/api/info?url=' + encodeURIComponent(u))
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (d.error) throw new Error(d.error);
+                current = d;
+                thumb.src = d.thumbnail || '';
+                titleEl.textContent = d.title || '—';
+                durEl.textContent = d.duration ? ('Длительность: ' + fmtTime(d.duration)) : '';
+                srcEl.textContent = (d.uploader ? (d.uploader + ' · ') : '') + (d.extractor || '');
+                fmts.innerHTML = '';
+                var list = (d.formats && d.formats.length) ? d.formats : [{ id: 'best', label: 'Лучшее' }];
+                list.forEach(function (f) {
+                    var b = document.createElement('button');
+                    b.className = 'fmt' + (f.audio ? ' audio' : '');
+                    b.textContent = f.label;
+                    b.onclick = function () { download(f.id, b); };
+                    fmts.appendChild(b);
+                });
+                card.classList.add('show');
+                setStatus('Готово. Выбери формат.');
+            })
+            .catch(function (e) { setStatus('Ошибка: ' + (e.message || e)); })
+            .finally(function () { checkBtn.disabled = false; });
+    };
+
+    function download(fmtId, btn) {
+        var u = urlEl.value.trim();
+        if (!u) return;
+        btn.disabled = true;
+        setStatus('Скачиваю… это может занять время');
+        var q = qEl.value;
+        fetch(srv() + '/api/download?url=' + encodeURIComponent(u) + '&format=' + encodeURIComponent(fmtId) + '&quality=' + encodeURIComponent(q))
+            .then(function (r) {
+                if (!r.ok) throw new Error('сервер вернул ' + r.status);
+                var cd = r.headers.get('Content-Disposition') || '';
+                var name = 'media';
+                var m = /filename\*=UTF-8''([^;]+)/i.exec(cd) || /filename="?([^";]+)"?/i.exec(cd);
+                if (m) name = decodeURIComponent(m[1]);
+                return r.blob().then(function (b) { return { blob: b, name: name }; });
+            })
+            .then(function (res) {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(res.blob);
+                a.download = res.name;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function () { a.remove(); URL.revokeObjectURL(a.href); }, 1500);
+                setStatus('Скачано: ' + res.name);
+            })
+            .catch(function (e) { setStatus('Ошибка: ' + (e.message || e)); })
+            .finally(function () { btn.disabled = false; });
+    }
+
+    urlEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') checkBtn.click(); });
+
+    // авто-подстановка из буфера
+    try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText().then(function (t) {
+                if (t && /^https?:\/\//i.test(t) && !urlEl.value) urlEl.value = t.trim();
+            }).catch(function () {});
+        }
+    } catch (_) {}
+})();
+</script>
+</body>
+</html>
