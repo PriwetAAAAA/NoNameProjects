@@ -6,19 +6,19 @@
 <title>Скачать медиа — NoName</title>
 <link rel="icon" href="mascot.png">
 <style>
-:root{
-  --brand:#7ec8ff; --brand2:#a78bfa;
-  --g1:#0a0a1f; --g2:#05060f;
-}
+:root{ --brand:#7ec8ff; --brand2:#a78bfa; --g1:#0a0a1f; --g2:#05060f; }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:#e8ecff;min-height:100vh;overflow-x:hidden;
+  background:var(--g2);transition:background-color .9s ease;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
-    radial-gradient(circle at 15% 8%, color-mix(in srgb, var(--brand) 32%, transparent), transparent 45%),
-    radial-gradient(circle at 85% 12%, color-mix(in srgb, var(--brand2) 26%, transparent), transparent 48%),
+    radial-gradient(circle at 15% 8%, color-mix(in srgb, var(--brand) 34%, transparent), transparent 46%),
+    radial-gradient(circle at 85% 12%, color-mix(in srgb, var(--brand2) 28%, transparent), transparent 48%),
     linear-gradient(160deg, var(--g1), var(--g2) 70%);
-  background-attachment:fixed;
-  transition:background .6s ease;
+  transition:background 1s ease;
 }
 nav{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:16px 18px;position:relative;z-index:2}
 nav a{color:#9fb0e8;text-decoration:none;font-weight:700;font-size:14px}
@@ -26,18 +26,16 @@ nav a:hover{color:#fff}
 .brand{color:#fff;font-weight:900}
 main{max-width:900px;margin:0 auto;padding:10px 18px 90px;position:relative;z-index:2}
 
-.hero{text-align:center;padding:24px 0 18px;transition:.4s}
+.hero{text-align:center;padding:24px 0 16px}
 .svc{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;margin-bottom:16px;
   background:color-mix(in srgb, var(--brand) 18%, transparent);
   border:1.5px solid color-mix(in srgb, var(--brand) 55%, transparent);
-  font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  transition:.4s}
+  font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;transition:.4s}
 .svc i{font-style:normal;font-size:16px;line-height:1}
 h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-height:1;
   background:linear-gradient(90deg, var(--brand), var(--brand2));
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 26px color-mix(in srgb, var(--brand) 45%, transparent));
-  transition:.4s}
+  filter:drop-shadow(0 0 26px color-mix(in srgb, var(--brand) 45%, transparent));transition:.4s}
 .sub{color:#9aa8d8;font-size:14px;margin-top:12px;line-height:1.6}
 
 .box{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 12px}
@@ -57,15 +55,12 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
   border:1px solid color-mix(in srgb, var(--brand) 35%, transparent);
   background:rgba(10,10,26,.8);color:#dfe6ff;outline:none}
 
-.status{text-align:center;font-size:13px;font-weight:700;min-height:20px;margin:14px 0;
-  color:var(--brand);transition:.3s}
+.status{text-align:center;font-size:13px;font-weight:700;min-height:20px;margin:14px 0;color:var(--brand);transition:.3s}
 .status.err{color:#ff6b81}
 
 .card{display:none;gap:18px;padding:18px;border-radius:18px;background:rgba(12,12,30,.8);
-  border:1.5px solid color-mix(in srgb, var(--brand) 35%, transparent);
-  backdrop-filter:blur(12px);margin-bottom:18px;
-  box-shadow:0 16px 50px color-mix(in srgb, var(--brand) 16%, transparent);
-  transition:.4s}
+  border:1.5px solid color-mix(in srgb, var(--brand) 35%, transparent);backdrop-filter:blur(12px);margin-bottom:18px;
+  box-shadow:0 16px 50px color-mix(in srgb, var(--brand) 16%, transparent);transition:.4s}
 .card.show{display:flex}
 .card img{width:200px;border-radius:12px;flex-shrink:0;object-fit:cover;background:#000}
 .card .meta{flex:1;min-width:0}
@@ -81,11 +76,7 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
 
 .hint{text-align:center;color:#6f7aab;font-size:12px;margin-top:34px;line-height:1.8}
 .hint b{color:#9aa8d8}
-@media(max-width:560px){
-  .card{flex-direction:column}
-  .card img{width:100%;height:180px}
-  h1{letter-spacing:-.5px}
-}
+@media(max-width:560px){.card{flex-direction:column}.card img{width:100%;height:180px}h1{letter-spacing:-.5px}}
 </style>
 </head>
 <body>
@@ -98,25 +89,25 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
   <div class="hero">
     <div class="svc" id="svc"><i id="svcIcon">🌐</i><span id="svcName">любой сервис</span></div>
     <h1>СКАЧАТЬ МЕДИА</h1>
-    <p class="sub" id="sub">Вставь ссылку — страница перекрасится под сервис и покажет доступные форматы.</p>
+    <p class="sub" id="sub">Вставь ссылку — страница перекрасится под сервис. Работает без своего сервера.</p>
   </div>
 
   <div class="box">
     <input id="url" type="text" placeholder="https://youtube.com/watch?v=...  или  https://tiktok.com/...">
-    <button id="check">Проверить</button>
+    <button id="check">Скачать</button>
   </div>
 
   <div class="opts">
-    <label>Сервер: <input id="srv" type="text" style="width:200px"></label>
     <label>Качество:
       <select id="q">
-        <option value="best">Лучшее</option>
         <option value="1080">1080p</option>
         <option value="720">720p</option>
         <option value="480">480p</option>
+        <option value="360">360p</option>
         <option value="audio">Только звук (mp3)</option>
       </select>
     </label>
+    <label style="opacity:.75">через публичные API · без сервера</label>
   </div>
 
   <div class="status" id="status"></div>
@@ -125,13 +116,12 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
     <img id="thumb" alt="">
     <div class="meta">
       <h3 id="title"></h3>
-      <p id="dur"></p>
       <p id="src"></p>
       <div class="formats" id="fmts"></div>
     </div>
   </div>
 
-  <p class="hint">Скачивание работает через локальный сервер (yt-dlp).<br>Запусти <b>media-server</b> на ПК и укажи его адрес выше.</p>
+  <p class="hint">Работает через публичные инстансы cobalt (по очереди, пока один не ответит).<br>Ссылки проходят через сторонние серверы · Spotify/Apple Music — DRM, не качаются.</p>
 </main>
 
 <script>
@@ -153,37 +143,34 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
         boosty:     { n: 'Boosty',        b: '#ff5a00', b2: '#ffa366', g1: '#1c0900', g2: '#080300', i: 'B' }
     };
 
+    var INSTANCES = [
+        'https://api.cobalt.tools/',
+        'https://cobalt-api.kwiatekmiki.com/',
+        'https://cobalt-backend.canine.tools/',
+        'https://cobalt-api.meowing.de/',
+        'https://co.eepy.today/',
+        'https://cobalt.752x.ink/',
+        'https://api.cobalt.best/',
+        'https://cobalt-api.ayo.tf/'
+    ];
+
     var urlEl = document.getElementById('url');
-    var srvEl = document.getElementById('srv');
     var qEl = document.getElementById('q');
-    var checkBtn = document.getElementById('check');
+    var btn = document.getElementById('check');
     var statusEl = document.getElementById('status');
     var card = document.getElementById('card');
     var thumb = document.getElementById('thumb');
     var titleEl = document.getElementById('title');
-    var durEl = document.getElementById('dur');
     var srcEl = document.getElementById('src');
     var fmts = document.getElementById('fmts');
-    var svc = document.getElementById('svc');
     var svcIcon = document.getElementById('svcIcon');
     var svcName = document.getElementById('svcName');
-    var subEl = document.getElementById('sub');
 
     var DEFAULT = { n: 'любой сервис', b: '#7ec8ff', b2: '#a78bfa', g1: '#0a0a1f', g2: '#05060f', i: '🌐' };
-    var currentSvc = DEFAULT;
 
-    srvEl.value = localStorage.getItem('nn_media_srv') || 'http://localhost:8088';
-    srvEl.onchange = function () { localStorage.setItem('nn_media_srv', srvEl.value); };
-
-    function srv() { return srvEl.value.replace(/\/+$/, ''); }
     function setStatus(s, isErr) {
         statusEl.textContent = s || '';
         statusEl.className = 'status' + (isErr ? ' err' : '');
-    }
-    function fmtTime(t) {
-        if (!t) return '';
-        t = Math.round(t);
-        return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2);
     }
 
     function detectSvc(u) {
@@ -208,7 +195,6 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
 
     function applyTheme(s) {
         if (!s) s = DEFAULT;
-        currentSvc = s;
         var r = document.documentElement.style;
         r.setProperty('--brand', s.b);
         r.setProperty('--brand2', s.b2);
@@ -218,7 +204,6 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
         svcName.textContent = s.n;
     }
 
-    // следим за вводом — перекрашиваем на лету
     var deb = null;
     urlEl.addEventListener('input', function () {
         clearTimeout(deb);
@@ -229,75 +214,89 @@ h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-h
         }, 180);
     });
 
-    checkBtn.onclick = function () {
+    function buildBody(u) {
+        var q = qEl.value;
+        var b = { url: u, filenameStyle: 'basic' };
+        if (q === 'audio') {
+            b.downloadMode = 'audio';
+            b.audioFormat = 'mp3';
+            b.audioBitrate = '128';
+        } else {
+            b.downloadMode = 'auto';
+            b.videoQuality = q;
+            b.youtubeVideoCodec = 'h264';
+        }
+        return b;
+    }
+
+    async function tryInstance(base, body) {
+        var ctrl = new AbortController();
+        var t = setTimeout(function () { ctrl.abort(); }, 25000);
+        try {
+            var r = await fetch(base, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+                signal: ctrl.signal
+            });
+            clearTimeout(t);
+            if (!r.ok) return null;
+            var d = await r.json();
+            if (d && (d.status === 'tunnel' || d.status === 'redirect') && d.url) return d;
+            if (d && d.status === 'picker' && d.picker && d.picker.length) return d.picker[0];
+            return null;
+        } catch (_) {
+            clearTimeout(t);
+            return null;
+        }
+    }
+
+    btn.onclick = async function () {
         var u = urlEl.value.trim();
         if (!u) { setStatus('Вставь ссылку', true); return; }
         var s = detectSvc(u);
         if (s) applyTheme(s);
+
+        btn.disabled = true;
         card.classList.remove('show');
-        checkBtn.disabled = true;
-        setStatus('Проверяю…');
-        fetch(srv() + '/api/info?url=' + encodeURIComponent(u))
-            .then(function (r) {
-                if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || ('HTTP ' + r.status)); });
-                return r.json();
-            })
-            .then(function (d) {
-                thumb.src = d.thumbnail || '';
-                titleEl.textContent = d.title || '—';
-                durEl.textContent = d.duration ? ('Длительность: ' + fmtTime(d.duration)) : '';
-                srcEl.textContent = (d.uploader ? (d.uploader + ' · ') : '') + (d.extractor || '');
-                fmts.innerHTML = '';
-                var list = (d.formats && d.formats.length) ? d.formats : [{ id: 'best', label: 'Лучшее' }];
-                list.forEach(function (f) {
-                    var b = document.createElement('button');
-                    b.className = 'fmt' + (f.audio ? ' audio' : '');
-                    b.textContent = f.label;
-                    b.onclick = function () { download(f.id, b); };
-                    fmts.appendChild(b);
-                });
-                card.classList.add('show');
-                setStatus('Готово. Выбери формат.');
-            })
-            .catch(function (e) {
-                var msg = String(e.message || e);
-                if (msg.indexOf('Failed to fetch') >= 0 || msg.indexOf('NetworkError') >= 0) {
-                    setStatus('Сервер не запущен. Запусти media-server на ПК (run.bat) и проверь адрес.', true);
-                } else {
-                    setStatus('Ошибка: ' + msg, true);
-                }
-            })
-            .finally(function () { checkBtn.disabled = false; });
+        titleEl.textContent = '';
+        srcEl.textContent = '';
+        fmts.innerHTML = '';
+        setStatus('Ищу рабочий инстанс…');
+
+        var body = buildBody(u);
+        var res = null, used = '';
+        for (var i = 0; i < INSTANCES.length; i++) {
+            setStatus('Пробую ' + (i + 1) + ' из ' + INSTANCES.length + '…');
+            res = await tryInstance(INSTANCES[i], body);
+            if (res) { used = INSTANCES[i]; break; }
+        }
+
+        if (!res) {
+            setStatus('Все публичные API не ответили. Попробуй позже или запусти свой сервер.', true);
+            btn.disabled = false;
+            return;
+        }
+
+        titleEl.textContent = res.filename || 'Готово';
+        srcEl.textContent = 'Источник: ' + used.replace('https://', '').replace(/\/$/, '');
+        thumb.style.display = 'none';
+
+        var a = document.createElement('a');
+        a.className = 'fmt';
+        a.textContent = '⬇ Скачать';
+        a.href = res.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.onclick = function () { setStatus('Скачивание началось…'); };
+        fmts.appendChild(a);
+
+        card.classList.add('show');
+        setStatus('Готово. Нажми «Скачать».');
+        btn.disabled = false;
     };
 
-    function download(fmtId, btn) {
-        var u = urlEl.value.trim();
-        if (!u) return;
-        btn.disabled = true;
-        setStatus('Скачиваю… это может занять время');
-        fetch(srv() + '/api/download?url=' + encodeURIComponent(u) + '&format=' + encodeURIComponent(fmtId) + '&quality=' + encodeURIComponent(qEl.value))
-            .then(function (r) {
-                if (!r.ok) throw new Error('сервер вернул ' + r.status);
-                var cd = r.headers.get('Content-Disposition') || '';
-                var name = 'media';
-                var m = /filename\*=UTF-8''([^;]+)/i.exec(cd) || /filename="?([^";]+)"?/i.exec(cd);
-                if (m) name = decodeURIComponent(m[1]);
-                return r.blob().then(function (b) { return { blob: b, name: name }; });
-            })
-            .then(function (res) {
-                var a = document.createElement('a');
-                a.href = URL.createObjectURL(res.blob);
-                a.download = res.name;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () { a.remove(); URL.revokeObjectURL(a.href); }, 1500);
-                setStatus('Скачано: ' + res.name);
-            })
-            .catch(function (e) { setStatus('Ошибка: ' + (e.message || e), true); })
-            .finally(function () { btn.disabled = false; });
-    }
-
-    urlEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') checkBtn.click(); });
+    urlEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !btn.disabled) btn.click(); });
 
     applyTheme(null);
 })();
