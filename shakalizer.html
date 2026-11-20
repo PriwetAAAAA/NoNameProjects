@@ -139,6 +139,22 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
 .pl-vol span{font-size:15px}
 .pl-vol input{width:64px;accent-color:#00ffa3;height:18px}
 .player audio{display:none}
+/* плеер видео */
+.vplayer{width:100%;text-align:left}
+.vplayer-stage{position:relative;background:#000;border-radius:12px;overflow:hidden}
+.vplayer-stage video{width:100%;display:block;max-height:62vh;object-fit:contain;background:#000}
+.vpl-big{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;
+  border:3px solid #000;background:linear-gradient(135deg,#00ffd5,#ffe600);font-size:26px;cursor:pointer;
+  box-shadow:0 8px 30px rgba(0,0,0,.6);transition:opacity .2s,transform .2s;color:#000}
+.vpl-big:hover{transform:translate(-50%,-50%) scale(1.08)}
+.vpl-big.hide{opacity:0;pointer-events:none}
+.vpl-bar{height:8px;border-radius:5px;background:rgba(255,255,255,.14);cursor:pointer;margin-top:10px}
+.vpl-prog{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#00ffd5,#ffe600)}
+.vpl-ctrl{display:flex;align-items:center;gap:10px;margin-top:8px}
+.vpl-btn{width:38px;height:38px;border-radius:50%;border:2px solid #000;background:#1a1030;color:#fff;font-size:14px;cursor:pointer}
+.vpl-time{font-size:13px;color:#9aa8d8;font-weight:700;font-variant-numeric:tabular-nums}
+.vpl-vol-ico{font-size:14px}
+.vpl-vol{flex:1;max-width:140px;accent-color:#00ffd5}
 @media(max-width:560px){.go{font-size:19px;padding:14px 20px}h1{text-shadow:3px 0 #ff2ec4,-3px 0 #00ffa3,0 5px #ffe600}}
 </style>
 </head>
@@ -327,7 +343,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             var img = document.createElement('img'); img.src = url; img.alt = 'shakal'; preview.appendChild(img);
             ext = 'jpg';
         } else if (res.kind === 'video') {
-            var v = document.createElement('video'); v.src = url; v.controls = true; v.loop = true; v.autoplay = true; preview.appendChild(v);
+            buildVideoPlayer(url);
             ext = 'webm';
         } else {
             var tt = res.blob.type || '';
@@ -429,7 +445,8 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
         var gap = Math.max(1, bw * 0.3);
         var maxH = H * 0.92;
         for (var i = 0; i < n; i++) {
-            var bin = Math.min(freq.length - 1, Math.floor(i * 1.1) + 1);
+            var tpos = i / (n - 1);
+            var bin = Math.min(freq.length - 1, Math.floor(Math.pow(tpos, 1.5) * 105) + 1);
             var v = freq[bin] / 255;
             eqSmooth[i] = eqSmooth[i] * 0.62 + v * 0.38;
             var h = Math.max(2, eqSmooth[i] * maxH);
@@ -438,6 +455,44 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             eqC.fillStyle = 'hsl(' + Math.round(hue) + ',70%,' + Math.round(light) + '%)';
             eqC.fillRect(i * bw + gap / 2, H - h, Math.max(1.5, bw - gap), h);
         }
+    }
+
+    function buildVideoPlayer(url) {
+        preview.innerHTML = '<div class="vplayer">'
+            + '<div class="vplayer-stage"><video id="vplVideo" playsinline loop preload="metadata"></video>'
+            + '<button class="vpl-big" id="vplBig" type="button">▶</button></div>'
+            + '<div class="vpl-bar" id="vplBar"><div class="vpl-prog" id="vplProg"></div></div>'
+            + '<div class="vpl-ctrl">'
+            + '<button class="vpl-btn" id="vplPlay" type="button">▶</button>'
+            + '<span class="vpl-time" id="vplTime">0:00 / 0:00</span>'
+            + '<span class="vpl-vol-ico">🔊</span>'
+            + '<input class="vpl-vol" id="vplVol" type="range" min="0" max="100" value="100">'
+            + '</div></div>';
+        var v = document.getElementById('vplVideo');
+        var big = document.getElementById('vplBig');
+        var play = document.getElementById('vplPlay');
+        var bar = document.getElementById('vplBar');
+        var prog = document.getElementById('vplProg');
+        var timeEl = document.getElementById('vplTime');
+        var vol = document.getElementById('vplVol');
+        v.src = url;
+        function toggle() {
+            if (v.paused) v.play().catch(function () {}); else v.pause();
+        }
+        big.onclick = toggle;
+        play.onclick = toggle;
+        v.onplay = function () { big.classList.add('hide'); play.textContent = '❚❚'; };
+        v.onpause = function () { big.classList.remove('hide'); play.textContent = '▶'; };
+        v.ontimeupdate = function () {
+            var d = v.duration || 0, c = v.currentTime || 0;
+            prog.style.width = d ? (c / d * 100) + '%' : '0%';
+            timeEl.textContent = fmtT(c) + ' / ' + fmtT(d);
+        };
+        bar.onclick = function (e) {
+            var r = bar.getBoundingClientRect();
+            if (v.duration) v.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * v.duration;
+        };
+        vol.oninput = function () { v.volume = vol.value / 100; };
     }
 
     function buildPlayer(url) {
@@ -752,7 +807,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             v.playsInline = true;
             v.onerror = function () { reject(new Error('Не удалось открыть видео')); };
             v.onloadedmetadata = function () {
-                var scale = level === 0 ? 1 : 1 / (4 + level * 2);
+                var scale = level === 0 ? 1 : 1 / (2 + level * 1.2);
                 var w = Math.max(32, Math.floor((v.videoWidth || 320) * scale));
                 var h = Math.max(32, Math.floor((v.videoHeight || 240) * scale));
                 var c = document.createElement('canvas');
@@ -761,7 +816,9 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
                 var stream = c.captureStream(12);
                 try {
                     var ac = new (window.AudioContext || window.webkitAudioContext)();
+                    try { ac.resume(); } catch (_) {}
                     var src = ac.createMediaElementSource(v);
+                    v.muted = true;
                     var dest = ac.createMediaStreamDestination();
                     var bassGain = isSpecial && bassEl ? (parseInt(bassEl.value, 10) / 100) * 24 : 0;
                     var vBass = ac.createBiquadFilter();
