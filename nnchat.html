@@ -964,14 +964,21 @@ body.light-theme .profile-status { color: #6a7090 !important; }
     }
 
     function saveAvatar(url) {
-        q(function () { return sb.from('profiles').upsert({ id: myId, name: myName, avatar: url, last_seen: new Date().toISOString() }); })
+        // локально сразу — чтобы UI не ждал сеть
+        try {
+            var u = JSON.parse(localStorage.getItem('steam_user') || '{}');
+            u.avatar = url;
+            localStorage.setItem('steam_user', JSON.stringify(u));
+        } catch (_) {}
+        avatars[myId] = url;
+        if ($('avPreview')) $('avPreview').innerHTML = '<img src="' + url + '" alt="">';
+        q(function () {
+            return sb.from('profiles').upsert({ id: myId, name: myName, avatar: url, last_seen: new Date().toISOString() }, { onConflict: 'id' });
+        })
             .then(function () {
-                var u = JSON.parse(localStorage.getItem('steam_user') || '{}');
-                u.avatar = url; localStorage.setItem('steam_user', JSON.stringify(u));
-                avatars[myId] = url;
-                if ($('avPreview')) $('avPreview').innerHTML = '<img src="' + url + '" alt="">';
                 loadAvatars();
-            }).catch(function (e) { alert('Ошибка: ' + (e.message || e)); });
+                showToast('Аватар сохранён');
+            }).catch(function (e) { alert('Ошибка сохранения аватара: ' + (e.message || e)); });
     }
 
     // ---------- ВРЕМЯ НА САЙТЕ ----------

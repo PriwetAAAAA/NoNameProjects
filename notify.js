@@ -133,16 +133,19 @@
     }
 
     function notify(text) {
+        // тост показываем всегда — так видно, что уведомления работают
+        showToast(text);
         if (document.hidden || document.visibilityState === 'hidden') {
             systemNotify(text);
             playSound();
         } else {
-            showToast(text);
+            // тихий клик звука и когда вкладка открыта — но не громко
+            try { if (localStorage.getItem('nn_notif_sound') !== '0') playSound(); } catch (_) {}
         }
     }
 
     function boot() {
-        if (!readMe()) return;
+        if (!readMe()) { setTimeout(boot, 800); return; }   // ждём логин
         var sb = getClient();
         if (!sb) { setTimeout(boot, 400); return; }
 
