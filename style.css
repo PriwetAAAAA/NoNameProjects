@@ -2237,3 +2237,80 @@ html, body { scrollbar-width: none; }
 /* анимации кнопок в попапах */
 .donate-btn { transition: transform .2s, box-shadow .2s; }
 .donate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,46,196,.5); }
+
+
+/* ===== MOBILE HEADER FIX (все телефоны) ===== */
+@media (max-width: 760px) {
+  header {
+    width: calc(100% - 16px) !important;
+    margin: 8px auto 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 20px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    row-gap: 8px !important;
+    align-items: center !important;
+  }
+  header .logo-link {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    gap: 8px !important;
+  }
+  header .site-logo-img { height: 28px !important; }
+  header .site-title, header .logo-text {
+    font-size: 15px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  header nav,
+  header .header-nav,
+  header .main-nav {
+    order: 3 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 2px !important;
+  }
+  header .nav-link,
+  header .nav-link-btn {
+    font-size: 12px !important;
+    padding: 7px 12px !important;
+    border-radius: 10px !important;
+    white-space: nowrap;
+  }
+  header .header-actions,
+  header .auth-buttons,
+  header .auth-area {
+    order: 2 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+  }
+  header .theme-btn,
+  header #theme-btn,
+  header .login-btn,
+  header .login-btn-nav,
+  header .btn-login,
+  header .btn-primary {
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+    min-height: 0 !important;
+    white-space: nowrap;
+  }
+  header .profile-avatar,
+  header .user-avatar { width: 30px !important; height: 30px !important; }
+}
+
+@media (max-width: 420px) {
+  header .nav-link,
+  header .nav-link-btn { font-size: 11px !important; padding: 6px 9px !important; }
+  header .theme-btn,
+  header #theme-btn,
+  header .login-btn,
+  header .login-btn-nav,
+  header .btn-login { font-size: 11px !important; padding: 7px 10px !important; }
+}
