@@ -113,7 +113,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
 .jokes{margin-top:44px;display:grid;gap:10px;font-size:14px;font-weight:700;color:#b98cff;text-align:center;line-height:1.7}
 .jokes b{color:#ffe600}
 /* аврора + виньетка */
-#aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.6}
+#aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(90px);opacity:.38}
 #aurora i{position:absolute;width:52vw;height:52vw;border-radius:50%}
 #aurora i:nth-child(1){left:-12%;top:-12%;background:radial-gradient(circle,#00ffd5,transparent 65%);animation:au1 14s ease-in-out infinite}
 #aurora i:nth-child(2){right:-12%;bottom:-12%;background:radial-gradient(circle,#b06bff,transparent 65%);animation:au2 18s ease-in-out infinite}
@@ -123,9 +123,6 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
   background:radial-gradient(ellipse at center, transparent 40%, rgba(2,1,10,.78) 100%)}
 /* эквалайзер */
 #eqCanvas{position:fixed;inset:0;z-index:2;pointer-events:none}
-#bassGlow{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at 50% 50%, rgba(126,200,255,0) 34%, rgba(126,200,255,.18) 72%, rgba(176,107,255,.42) 100%);
-  transition:opacity .12s linear;mix-blend-mode:screen}
 /* плеер */
 .player{display:flex;align-items:center;gap:14px;padding:16px 18px;text-align:left}
 .pl-btn{width:54px;height:54px;flex-shrink:0;border-radius:50%;border:3px solid #000;font-size:18px;font-weight:900;
@@ -149,7 +146,6 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
 
 <div id="aurora"><i></i><i></i></div>
 <canvas id="eqCanvas"></canvas>
-<div id="bassGlow"></div>
 <div id="vignette"></div>
 <div class="px" style="left:6%;top:22%"></div>
 <div class="px b" style="left:88%;top:30%"></div>
@@ -379,7 +375,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     var eqC = eqCanvas ? eqCanvas.getContext('2d') : null;
     var eqCtxA = null, analyser = null, audioSrcEl = null;
     var freq = new Uint8Array(128);
-    var eqSmooth = new Float32Array(56);
+    var eqSmooth = new Float32Array(96);
 
     function resizeEq() {
         if (!eqCanvas) return;
@@ -422,78 +418,26 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
         c.closePath();
     }
 
-    var eqPhase = 0;
-
     function drawEq() {
         requestAnimationFrame(drawEq);
         if (!eqC || !analyser) return;
         analyser.getByteFrequencyData(freq);
         var W = eqCanvas.width, H = eqCanvas.height;
         eqC.clearRect(0, 0, W, H);
-        eqPhase += 0.014;
-        var bass = (freq[2] + freq[3] + freq[4] + freq[5]) / 4 / 255;
-        var mid = (freq[10] + freq[14] + freq[18]) / 3 / 255;
-        var high = (freq[40] + freq[50] + freq[60]) / 3 / 255;
-        var A = 4 + bass * 44;
-        var M = 4 + mid * 28;
-        var TH = 2 + high * 13;
-
-        var grad = eqC.createLinearGradient(0, 0, W, H);
-        grad.addColorStop(0, 'rgba(0,255,213,.95)');
-        grad.addColorStop(0.5, 'rgba(126,200,255,.95)');
-        grad.addColorStop(1, 'rgba(176,107,255,.95)');
-        eqC.lineJoin = 'round';
-        eqC.lineCap = 'round';
-
-        eqC.beginPath();
-        var x, y;
-        for (x = 0; x <= W; x += 5) {
-            var t = x / W;
-            y = 7 + Math.sin(t * Math.PI * 6 + eqPhase * 2) * A + Math.sin(t * Math.PI * 14 + eqPhase) * TH;
-            if (x === 0) eqC.moveTo(x, y); else eqC.lineTo(x, y);
+        var n = eqSmooth.length;
+        var bw = W / n;
+        var gap = Math.max(1, bw * 0.3);
+        var maxH = Math.min(H * 0.17, 170);
+        for (var i = 0; i < n; i++) {
+            var bin = Math.min(freq.length - 1, Math.floor(i * 1.1) + 1);
+            var v = freq[bin] / 255;
+            eqSmooth[i] = eqSmooth[i] * 0.62 + v * 0.38;
+            var h = Math.max(2, eqSmooth[i] * maxH);
+            var hue = 212 - eqSmooth[i] * 168;
+            var light = 44 + eqSmooth[i] * 16;
+            eqC.fillStyle = 'hsl(' + Math.round(hue) + ',70%,' + Math.round(light) + '%)';
+            eqC.fillRect(i * bw + gap / 2, H - h, Math.max(1.5, bw - gap), h);
         }
-        for (y = 0; y <= H; y += 5) {
-            var t2 = y / H;
-            x = W - 7 - Math.sin(t2 * Math.PI * 5 + eqPhase * 1.7) * M;
-            eqC.lineTo(x, y);
-        }
-        for (x = W; x >= 0; x -= 5) {
-            var t3 = x / W;
-            y = H - 7 - Math.sin(t3 * Math.PI * 6 + eqPhase * 2.3) * A + Math.sin(t3 * Math.PI * 14 + eqPhase * 1.2) * TH;
-            eqC.lineTo(x, y);
-        }
-        for (y = H; y >= 0; y -= 5) {
-            var t4 = y / H;
-            x = 7 + Math.sin(t4 * Math.PI * 5 + eqPhase * 1.5) * M;
-            eqC.lineTo(x, y);
-        }
-        eqC.closePath();
-
-        // 1) широкое мягкое свечение
-        eqC.save();
-        eqC.filter = 'blur(26px)';
-        eqC.globalAlpha = 0.9;
-        eqC.strokeStyle = grad;
-        eqC.lineWidth = 13;
-        eqC.stroke();
-        eqC.restore();
-
-        // 2) среднее свечение
-        eqC.save();
-        eqC.filter = 'blur(8px)';
-        eqC.globalAlpha = 0.95;
-        eqC.strokeStyle = grad;
-        eqC.lineWidth = 5;
-        eqC.stroke();
-        eqC.restore();
-
-        // 3) яркая сердцевина
-        eqC.strokeStyle = 'rgba(235,255,255,.96)';
-        eqC.lineWidth = 1.7;
-        eqC.stroke();
-
-        var glow = document.getElementById('bassGlow');
-        if (glow) glow.style.opacity = Math.min(1, bass * 1.15).toFixed(3);
     }
 
     function buildPlayer(url) {
