@@ -18,14 +18,18 @@
   opacity:0;transition:opacity .25s}
 .shakal-card:hover::before{opacity:1}
 .shakal-card>*{position:relative;z-index:1}
-.shakal-card:hover{transform:translateY(-5px) rotate(-.7deg)!important;border-color:rgba(255,46,196,.65)!important;
-  box-shadow:0 0 0 2px rgba(255,46,196,.22),0 16px 44px rgba(255,46,196,.32)!important}
-.shakal-card h3{text-shadow:2px 0 #ff2ec4,-2px 0 #00ffa3}
-.shakal-card .project-btn{background:linear-gradient(135deg,#ffe600,#ff2ec4)!important;color:#000!important;font-weight:900}
-.shakal-joke{font-size:12px!important;color:#ffe600!important;font-weight:800;transform:rotate(-1deg)}
-.shakal-card img{filter:drop-shadow(0 0 16px rgba(255,46,196,.55))}
-.shakal-card:hover img{animation:shk .35s steps(2) infinite}
-@keyframes shk{0%{transform:translate(0,0)}50%{transform:translate(-2px,1px)}100%{transform:translate(2px,-1px)}}
+.shakal-joke{font-size:12px!important;color:rgba(255,255,255,.5)!important;font-weight:700}
+.shakal-card:hover{animation:shkCard .12s steps(2) infinite;border-color:rgba(255,46,196,.7)!important;
+  box-shadow:0 0 0 2px rgba(255,46,196,.3),0 16px 46px rgba(255,46,196,.4),0 0 70px rgba(0,255,163,.25)!important}
+.shakal-card:hover h3{text-shadow:3px 0 #ff2ec4,-3px 0 #00ffa3;animation:shkHue 1s linear infinite}
+.shakal-card:hover .shakal-joke{color:#ffe600!important;transform:rotate(-2deg)}
+.shakal-card:hover .project-btn{background:linear-gradient(135deg,#ffe600,#ff2ec4)!important;color:#000!important;
+  font-weight:900;animation:shkPulse .35s ease-in-out infinite alternate}
+.shakal-card:hover img{animation:shkImg .15s steps(2) infinite;filter:drop-shadow(0 0 18px #ff2ec4)}
+@keyframes shkCard{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,1px) rotate(-.6deg)}50%{transform:translate(2px,-1px) rotate(.6deg)}75%{transform:translate(-1px,2px) rotate(-.3deg)}100%{transform:translate(0,0) rotate(0)}}
+@keyframes shkImg{0%{transform:translate(0,0)}50%{transform:translate(-3px,2px)}100%{transform:translate(3px,-2px)}}
+@keyframes shkHue{from{filter:hue-rotate(0)}to{filter:hue-rotate(360deg)}}
+@keyframes shkPulse{from{transform:scale(1)}to{transform:scale(1.07)}}
 </style>
 </head>
 <body>

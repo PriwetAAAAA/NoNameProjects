@@ -112,11 +112,31 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
 
 .jokes{margin-top:44px;display:grid;gap:10px;font-size:14px;font-weight:700;color:#b98cff;text-align:center;line-height:1.7}
 .jokes b{color:#ffe600}
+/* эквалайзер */
+#eqCanvas{position:fixed;inset:0;z-index:2;pointer-events:none}
+#bassGlow{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center, rgba(255,46,196,0) 42%, rgba(255,46,196,.5) 100%);
+  transition:opacity .08s linear}
+/* плеер */
+.player{display:flex;align-items:center;gap:14px;padding:16px 18px;text-align:left}
+.pl-btn{width:54px;height:54px;flex-shrink:0;border-radius:50%;border:3px solid #000;font-size:18px;font-weight:900;
+  background:linear-gradient(135deg,#00ffa3,#ffe600);color:#000;cursor:pointer;box-shadow:4px 4px 0 #000}
+.pl-btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000}
+.pl-info{flex:1;min-width:0}
+.pl-name{font-size:14px;font-weight:800;color:#cfd8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+.pl-bar{height:10px;border-radius:6px;background:rgba(255,255,255,.12);cursor:pointer;overflow:hidden}
+.pl-prog{height:100%;width:0;background:linear-gradient(90deg,#00ffa3,#7ec8ff);border-radius:6px}
+.pl-time{font-size:13px;color:#9aa8d8;font-weight:700;white-space:nowrap}
+.pl-viz{display:flex;align-items:flex-end;gap:3px;height:40px;width:56px;flex-shrink:0}
+.pl-viz i{flex:1;background:linear-gradient(180deg,#ff2ec4,#00ffa3);border-radius:2px;height:10%}
+.player audio{display:none}
 @media(max-width:560px){.go{font-size:19px;padding:14px 20px}h1{text-shadow:3px 0 #ff2ec4,-3px 0 #00ffa3,0 5px #ffe600}}
 </style>
 </head>
 <body>
 
+<canvas id="eqCanvas"></canvas>
+<div id="bassGlow"></div>
 <div class="px" style="left:6%;top:22%"></div>
 <div class="px b" style="left:88%;top:30%"></div>
 <div class="px c" style="left:12%;top:74%"></div>
@@ -292,20 +312,156 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
     function showResult(res) {
         preview.innerHTML = '';
         var url = URL.createObjectURL(res.blob);
+        var ext = 'bin';
         if (res.kind === 'image') {
             var img = document.createElement('img'); img.src = url; img.alt = 'shakal'; preview.appendChild(img);
-            dl.download = 'shakal.jpg';
+            ext = 'jpg';
         } else if (res.kind === 'video') {
             var v = document.createElement('video'); v.src = url; v.controls = true; v.loop = true; v.autoplay = true; preview.appendChild(v);
-            dl.download = 'shakal.webm';
+            ext = 'webm';
         } else {
-            var a = document.createElement('audio'); a.src = url; a.controls = true; preview.appendChild(a);
             var tt = res.blob.type || '';
-            dl.download = tt.indexOf('mpeg') >= 0 ? 'shakal.mp3' : (tt.indexOf('webm') >= 0 ? 'shakal.webm' : 'shakal.wav');
+            ext = tt.indexOf('mpeg') >= 0 ? 'mp3' : (tt.indexOf('webm') >= 0 ? 'webm' : 'wav');
+            buildPlayer(url);
         }
         dl.href = url;
+        dl.download = outFileName(ext);
         out.classList.add('show');
     }
+
+    function baseNameOf(name) {
+        var n = String(name || 'shakal');
+        var i = n.lastIndexOf('.');
+        return i > 0 ? n.slice(0, i) : n;
+    }
+
+    function currentNick() {
+        try {
+            var su = JSON.parse(localStorage.getItem('steam_user') || 'null');
+            return (su && (su.name || su.id)) || '';
+        } catch (_) { return ''; }
+    }
+
+    function outFileName(ext) {
+        var base = baseNameOf(file && file.name);
+        var level = q ? parseInt(q.value, 10) : 0;
+        var bass = (isSpecial && bassEl) ? parseInt(bassEl.value, 10) : 0;
+        var bassOnly = bass > 0 && level === 0;
+        if (!bassOnly) return base + '.' + ext;
+        var nick = currentNick() || 'NoName';
+        return base + '(BASSBOOSTed by ' + nick + ').' + ext;
+    }
+
+    // ===== эквалайзер + плеер =====
+    var plBars = null;
+
+    function fmtT(s) {
+        s = Math.max(0, Math.floor(s || 0));
+        var m = Math.floor(s / 60), ss = s % 60;
+        return m + ':' + (ss < 10 ? '0' : '') + ss;
+    }
+
+    var eqCanvas = document.getElementById('eqCanvas');
+    var eqC = eqCanvas ? eqCanvas.getContext('2d') : null;
+    var eqCtxA = null, analyser = null, audioSrcEl = null;
+    var freq = new Uint8Array(128);
+
+    function resizeEq() {
+        if (!eqCanvas) return;
+        eqCanvas.width = window.innerWidth;
+        eqCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeEq);
+    resizeEq();
+
+    function ensureEq(au) {
+        try {
+            if (!eqCtxA) {
+                eqCtxA = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = eqCtxA.createAnalyser();
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.75;
+                analyser.connect(eqCtxA.destination);
+            }
+            if (audioSrcEl !== au) {
+                audioSrcEl = au;
+                var s = eqCtxA.createMediaElementSource(au);
+                s.connect(analyser);
+            }
+            if (eqCtxA.state === 'suspended') eqCtxA.resume();
+        } catch (_) {}
+    }
+
+    function drawEq() {
+        requestAnimationFrame(drawEq);
+        if (!eqC || !analyser) return;
+        analyser.getByteFrequencyData(freq);
+        var W = eqCanvas.width, H = eqCanvas.height;
+        eqC.clearRect(0, 0, W, H);
+        var n = 26, bw = Math.max(3, Math.round(W * 0.005)), gap = Math.round(bw * 1.6);
+        for (var i = 0; i < n; i++) {
+            var v = freq[Math.min(freq.length - 1, Math.floor(i * 2))] / 255;
+            if (v < 0.015) continue;
+            var hue = 300 - i * 9;
+            eqC.fillStyle = 'hsla(' + hue + ',100%,62%,' + (0.22 + v * 0.72).toFixed(3) + ')';
+            var hh = v * H * 0.42;
+            eqC.fillRect(2 + i * (bw + gap), H / 2 - hh / 2, bw, hh);
+            eqC.fillRect(W - 2 - bw - i * (bw + gap), H / 2 - hh / 2, bw, hh);
+            var ww = v * W * 0.36;
+            eqC.fillRect(W / 2 - ww / 2, 2 + i * (bw + gap), ww, bw);
+            eqC.fillRect(W / 2 - ww / 2, H - 2 - bw - i * (bw + gap), ww, bw);
+        }
+        var bass = (freq[2] + freq[3] + freq[4] + freq[5]) / 4 / 255;
+        var glow = document.getElementById('bassGlow');
+        if (glow) glow.style.opacity = (bass * 0.9).toFixed(3);
+        if (plBars) {
+            for (var k = 0; k < plBars.length; k++) {
+                var vv = freq[Math.min(freq.length - 1, k * 10)] / 255;
+                plBars[k].style.height = Math.round(8 + vv * 92) + '%';
+            }
+        }
+    }
+
+    function buildPlayer(url) {
+        preview.innerHTML = '<div class="player">'
+            + '<button class="pl-btn" id="plBtn" type="button">▶</button>'
+            + '<div class="pl-info">'
+            + '<div class="pl-name" id="plName"></div>'
+            + '<div class="pl-bar" id="plBar"><div class="pl-prog" id="plProg"></div></div>'
+            + '</div>'
+            + '<div class="pl-time" id="plTime">0:00 / 0:00</div>'
+            + '<div class="pl-viz" id="plViz"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+            + '<audio id="plAudio" preload="metadata"></audio>'
+            + '</div>';
+        var au = document.getElementById('plAudio');
+        var btn = document.getElementById('plBtn');
+        var bar = document.getElementById('plBar');
+        var prog = document.getElementById('plProg');
+        var timeEl = document.getElementById('plTime');
+        var nameEl = document.getElementById('plName');
+        nameEl.textContent = (file && file.name) || 'audio';
+        plBars = document.getElementById('plViz').querySelectorAll('i');
+        au.src = url;
+        btn.onclick = function () {
+            ensureEq(au);
+            if (au.paused) { au.play().catch(function () {}); }
+            else { au.pause(); }
+        };
+        au.onplay = function () { btn.textContent = '❚❚'; };
+        au.onpause = function () { btn.textContent = '▶'; };
+        au.onended = function () { btn.textContent = '▶'; };
+        au.ontimeupdate = function () {
+            var d = au.duration || 0, c = au.currentTime || 0;
+            prog.style.width = d ? (c / d * 100) + '%' : '0%';
+            timeEl.textContent = fmtT(c) + ' / ' + fmtT(d);
+        };
+        bar.onclick = function (e) {
+            var r = bar.getBoundingClientRect();
+            if (au.duration) au.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * au.duration;
+        };
+    }
+
+    drawEq();
 
     // ---------- ФОТО: сохраняем РАЗМЕР, портим только качество ----------
     function shakalImage(f, level) {
