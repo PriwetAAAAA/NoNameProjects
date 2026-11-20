@@ -6,47 +6,86 @@
 <title>Скачать медиа — NoName</title>
 <link rel="icon" href="mascot.png">
 <style>
+:root{
+  --brand:#7ec8ff; --brand2:#a78bfa;
+  --g1:#0a0a1f; --g2:#05060f;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:#05060f;color:#e8ecff;min-height:100vh;
-  background-image:radial-gradient(circle at 15% 10%, rgba(124,60,255,.3), transparent 45%),
-                   radial-gradient(circle at 85% 15%, rgba(0,200,255,.2), transparent 45%),
-                   radial-gradient(circle at 50% 100%, rgba(255,46,196,.18), transparent 55%)}
-nav{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:16px 18px}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:#e8ecff;min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(circle at 15% 8%, color-mix(in srgb, var(--brand) 32%, transparent), transparent 45%),
+    radial-gradient(circle at 85% 12%, color-mix(in srgb, var(--brand2) 26%, transparent), transparent 48%),
+    linear-gradient(160deg, var(--g1), var(--g2) 70%);
+  background-attachment:fixed;
+  transition:background .6s ease;
+}
+nav{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:16px 18px;position:relative;z-index:2}
 nav a{color:#9fb0e8;text-decoration:none;font-weight:700;font-size:14px}
 nav a:hover{color:#fff}
 .brand{color:#fff;font-weight:900}
-main{max-width:900px;margin:0 auto;padding:10px 18px 80px}
-h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spacing:-1px;
-  background:linear-gradient(90deg,#7ec8ff,#a78bfa,#ff2ec4);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 22px rgba(124,60,255,.4))}
-.sub{text-align:center;color:#9aa8d8;font-size:14px;margin:10px 0 22px;line-height:1.6}
-.box{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.box input{flex:1;min-width:220px;font:inherit;font-size:15px;padding:14px 16px;border-radius:12px;
-  border:2px solid rgba(124,60,255,.45);background:rgba(18,14,40,.8);color:#fff;outline:none}
-.box input:focus{border-color:#7ec8ff}
-.box button{font:inherit;font-size:15px;font-weight:800;padding:14px 22px;border-radius:12px;cursor:pointer;border:none;
-  background:linear-gradient(135deg,#7ec8ff,#a78bfa);color:#04030f}
-.box button:hover{filter:brightness(1.1)}
-.box button:disabled{opacity:.5;cursor:wait}
-.opts{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:#9aa8d8;margin-bottom:20px}
+main{max-width:900px;margin:0 auto;padding:10px 18px 90px;position:relative;z-index:2}
+
+.hero{text-align:center;padding:24px 0 18px;transition:.4s}
+.svc{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;margin-bottom:16px;
+  background:color-mix(in srgb, var(--brand) 18%, transparent);
+  border:1.5px solid color-mix(in srgb, var(--brand) 55%, transparent);
+  font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  transition:.4s}
+.svc i{font-style:normal;font-size:16px;line-height:1}
+h1{font-size:clamp(30px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-height:1;
+  background:linear-gradient(90deg, var(--brand), var(--brand2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 26px color-mix(in srgb, var(--brand) 45%, transparent));
+  transition:.4s}
+.sub{color:#9aa8d8;font-size:14px;margin-top:12px;line-height:1.6}
+
+.box{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 12px}
+.box input{flex:1;min-width:220px;font:inherit;font-size:15px;padding:15px 18px;border-radius:14px;
+  border:2px solid color-mix(in srgb, var(--brand) 45%, transparent);
+  background:rgba(10,10,26,.75);color:#fff;outline:none;transition:.2s;backdrop-filter:blur(8px)}
+.box input:focus{border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb, var(--brand) 18%, transparent)}
+.box button{font:inherit;font-size:15px;font-weight:800;padding:15px 26px;border-radius:14px;cursor:pointer;border:none;
+  background:linear-gradient(135deg, var(--brand), var(--brand2));color:#04030f;
+  box-shadow:0 8px 24px color-mix(in srgb, var(--brand) 35%, transparent);transition:.15s}
+.box button:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.box button:disabled{opacity:.5;cursor:wait;transform:none}
+
+.opts{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#9aa8d8;margin-bottom:8px}
 .opts label{display:flex;align-items:center;gap:6px}
-.opts input,.opts select{font:inherit;font-size:13px;padding:7px 10px;border-radius:9px;border:1px solid rgba(124,60,255,.4);
-  background:rgba(18,14,40,.8);color:#dfe6ff}
-.status{text-align:center;color:#00ffd5;font-size:13px;font-weight:700;min-height:18px;margin-bottom:14px}
-.card{display:none;gap:16px;padding:16px;border-radius:16px;background:rgba(18,14,40,.75);
-  border:2px solid rgba(124,60,255,.35);margin-bottom:16px}
+.opts input,.opts select{font:inherit;font-size:13px;padding:8px 11px;border-radius:10px;
+  border:1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  background:rgba(10,10,26,.8);color:#dfe6ff;outline:none}
+
+.status{text-align:center;font-size:13px;font-weight:700;min-height:20px;margin:14px 0;
+  color:var(--brand);transition:.3s}
+.status.err{color:#ff6b81}
+
+.card{display:none;gap:18px;padding:18px;border-radius:18px;background:rgba(12,12,30,.8);
+  border:1.5px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  backdrop-filter:blur(12px);margin-bottom:18px;
+  box-shadow:0 16px 50px color-mix(in srgb, var(--brand) 16%, transparent);
+  transition:.4s}
 .card.show{display:flex}
-.card img{width:180px;border-radius:10px;flex-shrink:0;object-fit:cover}
+.card img{width:200px;border-radius:12px;flex-shrink:0;object-fit:cover;background:#000}
 .card .meta{flex:1;min-width:0}
-.card h3{font-size:16px;margin-bottom:6px;word-break:break-word}
+.card h3{font-size:17px;margin-bottom:8px;word-break:break-word;line-height:1.35}
 .card p{font-size:13px;color:#9aa8d8;margin-bottom:4px}
-.formats{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.fmt{font:inherit;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer;
-  border:2px solid rgba(124,60,255,.45);background:rgba(30,24,60,.8);color:#dfe6ff}
-.fmt:hover{border-color:#00ffd5;color:#fff}
-.fmt.audio{border-color:rgba(255,230,0,.4)}
-.hint{text-align:center;color:#6f7aab;font-size:12px;margin-top:30px;line-height:1.8}
-@media(max-width:560px){.card{flex-direction:column}.card img{width:100%;height:160px}}
+.formats{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.fmt{font:inherit;font-size:13px;font-weight:700;padding:10px 15px;border-radius:11px;cursor:pointer;
+  border:1.5px solid color-mix(in srgb, var(--brand) 45%, transparent);
+  background:rgba(20,20,46,.9);color:#dfe6ff;transition:.15s}
+.fmt:hover{border-color:var(--brand);color:#fff;transform:translateY(-2px)}
+.fmt.audio{border-color:rgba(255,214,0,.5);color:#ffe680}
+.fmt.audio:hover{border-color:#ffe600}
+
+.hint{text-align:center;color:#6f7aab;font-size:12px;margin-top:34px;line-height:1.8}
+.hint b{color:#9aa8d8}
+@media(max-width:560px){
+  .card{flex-direction:column}
+  .card img{width:100%;height:180px}
+  h1{letter-spacing:-.5px}
+}
 </style>
 </head>
 <body>
@@ -54,17 +93,21 @@ h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spaci
   <a class="brand" href="index.html">NoName</a>
   <a href="programs.html">← приложения</a>
 </nav>
+
 <main>
-  <h1>СКАЧАТЬ МЕДИА</h1>
-  <p class="sub">YouTube · Shorts · TikTok · Instagram · Twitter/X · VK Видео · OK.ru · Rutube · Dzen · Twitch · Reddit · Pinterest · Facebook · SoundCloud · Boosty</p>
+  <div class="hero">
+    <div class="svc" id="svc"><i id="svcIcon">🌐</i><span id="svcName">любой сервис</span></div>
+    <h1>СКАЧАТЬ МЕДИА</h1>
+    <p class="sub" id="sub">Вставь ссылку — страница перекрасится под сервис и покажет доступные форматы.</p>
+  </div>
 
   <div class="box">
-    <input id="url" type="text" placeholder="Вставь ссылку (https://...)">
+    <input id="url" type="text" placeholder="https://youtube.com/watch?v=...  или  https://tiktok.com/...">
     <button id="check">Проверить</button>
   </div>
 
   <div class="opts">
-    <label>Сервер: <input id="srv" type="text" style="width:210px"></label>
+    <label>Сервер: <input id="srv" type="text" style="width:200px"></label>
     <label>Качество:
       <select id="q">
         <option value="best">Лучшее</option>
@@ -77,6 +120,7 @@ h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spaci
   </div>
 
   <div class="status" id="status"></div>
+
   <div class="card" id="card">
     <img id="thumb" alt="">
     <div class="meta">
@@ -92,6 +136,23 @@ h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spaci
 
 <script>
 (function () {
+    var SERVICES = {
+        youtube:    { n: 'YouTube',       b: '#ff0033', b2: '#ff6b6b', g1: '#1c0006', g2: '#080002', i: '▶' },
+        tiktok:     { n: 'TikTok',        b: '#00f2ea', b2: '#ff0050', g1: '#001518', g2: '#08000a', i: '♪' },
+        instagram:  { n: 'Instagram',     b: '#e1306c', b2: '#f77737', g1: '#1c0014', g2: '#0a0208', i: '◉' },
+        twitter:    { n: 'X / Twitter',   b: '#5aa9ff', b2: '#c9d9ff', g1: '#00101c', g2: '#000000', i: '𝕏' },
+        vk:         { n: 'VK Видео',      b: '#0077ff', b2: '#66aaff', g1: '#000d22', g2: '#000004', i: 'VK' },
+        ok:         { n: 'OK.ru',         b: '#ff7f00', b2: '#ffc266', g1: '#1c0f00', g2: '#080500', i: 'OK' },
+        rutube:     { n: 'Rutube',        b: '#00c853', b2: '#8dffb9', g1: '#001c0d', g2: '#000805', i: 'R' },
+        dzen:       { n: 'Dzen',          b: '#ff6b00', b2: '#ffb066', g1: '#1c0b00', g2: '#080400', i: 'D' },
+        twitch:     { n: 'Twitch',        b: '#9146ff', b2: '#c9a6ff', g1: '#100022', g2: '#04000a', i: '▸' },
+        reddit:     { n: 'Reddit',        b: '#ff4500', b2: '#ff9a66', g1: '#1c0900', g2: '#080300', i: 'r' },
+        pinterest:  { n: 'Pinterest',     b: '#e60023', b2: '#ff7090', g1: '#1c0008', g2: '#080002', i: 'P' },
+        facebook:   { n: 'Facebook',      b: '#1877f2', b2: '#8fbaff', g1: '#001228', g2: '#000005', i: 'f' },
+        soundcloud: { n: 'SoundCloud',    b: '#ff7700', b2: '#ffc266', g1: '#1c0e00', g2: '#080400', i: '☁' },
+        boosty:     { n: 'Boosty',        b: '#ff5a00', b2: '#ffa366', g1: '#1c0900', g2: '#080300', i: 'B' }
+    };
+
     var urlEl = document.getElementById('url');
     var srvEl = document.getElementById('srv');
     var qEl = document.getElementById('q');
@@ -103,31 +164,85 @@ h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spaci
     var durEl = document.getElementById('dur');
     var srcEl = document.getElementById('src');
     var fmts = document.getElementById('fmts');
-    var current = null;
+    var svc = document.getElementById('svc');
+    var svcIcon = document.getElementById('svcIcon');
+    var svcName = document.getElementById('svcName');
+    var subEl = document.getElementById('sub');
+
+    var DEFAULT = { n: 'любой сервис', b: '#7ec8ff', b2: '#a78bfa', g1: '#0a0a1f', g2: '#05060f', i: '🌐' };
+    var currentSvc = DEFAULT;
 
     srvEl.value = localStorage.getItem('nn_media_srv') || 'http://localhost:8088';
     srvEl.onchange = function () { localStorage.setItem('nn_media_srv', srvEl.value); };
 
     function srv() { return srvEl.value.replace(/\/+$/, ''); }
-    function setStatus(s) { statusEl.textContent = s || ''; }
+    function setStatus(s, isErr) {
+        statusEl.textContent = s || '';
+        statusEl.className = 'status' + (isErr ? ' err' : '');
+    }
     function fmtTime(t) {
         if (!t) return '';
         t = Math.round(t);
-        var m = Math.floor(t / 60), s = t % 60;
-        return m + ':' + (s < 10 ? '0' : '') + s;
+        return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2);
     }
+
+    function detectSvc(u) {
+        var h = '';
+        try { h = new URL(u).hostname.toLowerCase(); } catch (_) { return null; }
+        if (/youtube\.com|youtu\.be/.test(h)) return SERVICES.youtube;
+        if (/tiktok\.com/.test(h)) return SERVICES.tiktok;
+        if (/instagram\.com/.test(h)) return SERVICES.instagram;
+        if (/twitter\.com|x\.com/.test(h)) return SERVICES.twitter;
+        if (/vk\.com|vkvideo\.ru/.test(h)) return SERVICES.vk;
+        if (/ok\.ru/.test(h)) return SERVICES.ok;
+        if (/rutube\.ru/.test(h)) return SERVICES.rutube;
+        if (/dzen\.ru/.test(h)) return SERVICES.dzen;
+        if (/twitch\.tv/.test(h)) return SERVICES.twitch;
+        if (/reddit\.com|redd\.it/.test(h)) return SERVICES.reddit;
+        if (/pinterest\./.test(h)) return SERVICES.pinterest;
+        if (/facebook\.com|fb\.watch/.test(h)) return SERVICES.facebook;
+        if (/soundcloud\.com/.test(h)) return SERVICES.soundcloud;
+        if (/boosty\.to/.test(h)) return SERVICES.boosty;
+        return null;
+    }
+
+    function applyTheme(s) {
+        if (!s) s = DEFAULT;
+        currentSvc = s;
+        var r = document.documentElement.style;
+        r.setProperty('--brand', s.b);
+        r.setProperty('--brand2', s.b2);
+        r.setProperty('--g1', s.g1);
+        r.setProperty('--g2', s.g2);
+        svcIcon.textContent = s.i;
+        svcName.textContent = s.n;
+    }
+
+    // следим за вводом — перекрашиваем на лету
+    var deb = null;
+    urlEl.addEventListener('input', function () {
+        clearTimeout(deb);
+        deb = setTimeout(function () {
+            var s = detectSvc(urlEl.value.trim());
+            if (s) applyTheme(s);
+            else if (!urlEl.value.trim()) applyTheme(null);
+        }, 180);
+    });
 
     checkBtn.onclick = function () {
         var u = urlEl.value.trim();
-        if (!u) { setStatus('Вставь ссылку'); return; }
+        if (!u) { setStatus('Вставь ссылку', true); return; }
+        var s = detectSvc(u);
+        if (s) applyTheme(s);
         card.classList.remove('show');
         checkBtn.disabled = true;
         setStatus('Проверяю…');
         fetch(srv() + '/api/info?url=' + encodeURIComponent(u))
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || ('HTTP ' + r.status)); });
+                return r.json();
+            })
             .then(function (d) {
-                if (d.error) throw new Error(d.error);
-                current = d;
                 thumb.src = d.thumbnail || '';
                 titleEl.textContent = d.title || '—';
                 durEl.textContent = d.duration ? ('Длительность: ' + fmtTime(d.duration)) : '';
@@ -144,7 +259,14 @@ h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spaci
                 card.classList.add('show');
                 setStatus('Готово. Выбери формат.');
             })
-            .catch(function (e) { setStatus('Ошибка: ' + (e.message || e)); })
+            .catch(function (e) {
+                var msg = String(e.message || e);
+                if (msg.indexOf('Failed to fetch') >= 0 || msg.indexOf('NetworkError') >= 0) {
+                    setStatus('Сервер не запущен. Запусти media-server на ПК (run.bat) и проверь адрес.', true);
+                } else {
+                    setStatus('Ошибка: ' + msg, true);
+                }
+            })
             .finally(function () { checkBtn.disabled = false; });
     };
 
@@ -153,8 +275,7 @@ h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spaci
         if (!u) return;
         btn.disabled = true;
         setStatus('Скачиваю… это может занять время');
-        var q = qEl.value;
-        fetch(srv() + '/api/download?url=' + encodeURIComponent(u) + '&format=' + encodeURIComponent(fmtId) + '&quality=' + encodeURIComponent(q))
+        fetch(srv() + '/api/download?url=' + encodeURIComponent(u) + '&format=' + encodeURIComponent(fmtId) + '&quality=' + encodeURIComponent(qEl.value))
             .then(function (r) {
                 if (!r.ok) throw new Error('сервер вернул ' + r.status);
                 var cd = r.headers.get('Content-Disposition') || '';
@@ -172,20 +293,13 @@ h1{text-align:center;font-size:clamp(28px,6vw,46px);font-weight:900;letter-spaci
                 setTimeout(function () { a.remove(); URL.revokeObjectURL(a.href); }, 1500);
                 setStatus('Скачано: ' + res.name);
             })
-            .catch(function (e) { setStatus('Ошибка: ' + (e.message || e)); })
+            .catch(function (e) { setStatus('Ошибка: ' + (e.message || e), true); })
             .finally(function () { btn.disabled = false; });
     }
 
     urlEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') checkBtn.click(); });
 
-    // авто-подстановка из буфера
-    try {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-            navigator.clipboard.readText().then(function (t) {
-                if (t && /^https?:\/\//i.test(t) && !urlEl.value) urlEl.value = t.trim();
-            }).catch(function () {});
-        }
-    } catch (_) {}
+    applyTheme(null);
 })();
 </script>
 </body>
