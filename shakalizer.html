@@ -129,6 +129,9 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
 .pl-time{font-size:13px;color:#9aa8d8;font-weight:700;white-space:nowrap}
 .pl-viz{display:flex;align-items:flex-end;gap:3px;height:40px;width:56px;flex-shrink:0}
 .pl-viz i{flex:1;background:linear-gradient(180deg,#ff2ec4,#00ffa3);border-radius:2px;height:10%}
+.pl-vol{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pl-vol span{font-size:15px}
+.pl-vol input{width:64px;accent-color:#00ffa3;height:18px}
 .player audio{display:none}
 @media(max-width:560px){.go{font-size:19px;padding:14px 20px}h1{text-shadow:3px 0 #ff2ec4,-3px 0 #00ffa3,0 5px #ffe600}}
 </style>
@@ -408,43 +411,61 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
         c.closePath();
     }
 
+    var eqPhase = 0;
+
     function drawEq() {
         requestAnimationFrame(drawEq);
         if (!eqC || !analyser) return;
         analyser.getByteFrequencyData(freq);
         var W = eqCanvas.width, H = eqCanvas.height;
         eqC.clearRect(0, 0, W, H);
-        var n = eqSmooth.length;
-        var barH = H / n;
-        var maxLen = Math.min(W * 0.22, 420);
-        var grad = eqC.createLinearGradient(0, H, 0, 0);
-        grad.addColorStop(0, 'rgba(0,255,213,0.95)');
-        grad.addColorStop(0.45, 'rgba(126,200,255,0.9)');
-        grad.addColorStop(1, 'rgba(176,107,255,0.85)');
-        eqC.fillStyle = grad;
-        eqC.shadowColor = 'rgba(126,200,255,0.5)';
-        eqC.shadowBlur = 22;
-        for (var i = 0; i < n; i++) {
-            var pos = i / (n - 1);
-            var bin = Math.min(freq.length - 1, Math.floor(Math.pow(pos, 1.7) * 70) + 2);
-            var v = freq[bin] / 255;
-            eqSmooth[i] = eqSmooth[i] * 0.72 + v * 0.28;
-            var len = Math.max(3, eqSmooth[i] * maxLen);
-            var bh = Math.max(2, barH * 0.55);
-            var y = H - (i + 1) * barH + (barH - bh) / 2;
-            rr(eqC, 0, y, len, bh, bh / 2); eqC.fill();
-            rr(eqC, W - len, y, len, bh, bh / 2); eqC.fill();
-        }
-        eqC.shadowBlur = 0;
+        eqPhase += 0.014;
         var bass = (freq[2] + freq[3] + freq[4] + freq[5]) / 4 / 255;
-        var glow = document.getElementById('bassGlow');
-        if (glow) glow.style.opacity = (bass * 0.8).toFixed(3);
-        if (plBars) {
-            for (var k = 0; k < plBars.length; k++) {
-                var vv = freq[Math.min(freq.length - 1, k * 10)] / 255;
-                plBars[k].style.height = Math.round(8 + vv * 92) + '%';
-            }
+        var mid = (freq[10] + freq[14] + freq[18]) / 3 / 255;
+        var high = (freq[40] + freq[50] + freq[60]) / 3 / 255;
+        var A = 3 + bass * 26;
+        var M = 3 + mid * 20;
+        var TH = 2 + high * 10;
+
+        var grad = eqC.createLinearGradient(0, 0, W, H);
+        grad.addColorStop(0, 'rgba(0,255,213,.95)');
+        grad.addColorStop(0.5, 'rgba(126,200,255,.95)');
+        grad.addColorStop(1, 'rgba(176,107,255,.95)');
+        eqC.strokeStyle = grad;
+        eqC.lineWidth = 2.5;
+        eqC.lineJoin = 'round';
+        eqC.lineCap = 'round';
+        eqC.shadowColor = 'rgba(126,200,255,.85)';
+        eqC.shadowBlur = 28;
+
+        eqC.beginPath();
+        var x, y;
+        for (x = 0; x <= W; x += 5) {
+            var t = x / W;
+            y = 7 + Math.sin(t * Math.PI * 6 + eqPhase * 2) * A + Math.sin(t * Math.PI * 14 + eqPhase) * TH;
+            if (x === 0) eqC.moveTo(x, y); else eqC.lineTo(x, y);
         }
+        for (y = 0; y <= H; y += 5) {
+            var t2 = y / H;
+            x = W - 7 - Math.sin(t2 * Math.PI * 5 + eqPhase * 1.7) * M;
+            eqC.lineTo(x, y);
+        }
+        for (x = W; x >= 0; x -= 5) {
+            var t3 = x / W;
+            y = H - 7 - Math.sin(t3 * Math.PI * 6 + eqPhase * 2.3) * A + Math.sin(t3 * Math.PI * 14 + eqPhase * 1.2) * TH;
+            eqC.lineTo(x, y);
+        }
+        for (y = H; y >= 0; y -= 5) {
+            var t4 = y / H;
+            x = 7 + Math.sin(t4 * Math.PI * 5 + eqPhase * 1.5) * M;
+            eqC.lineTo(x, y);
+        }
+        eqC.closePath();
+        eqC.stroke();
+        eqC.shadowBlur = 0;
+
+        var glow = document.getElementById('bassGlow');
+        if (glow) glow.style.opacity = (bass * 0.85).toFixed(3);
     }
 
     function buildPlayer(url) {
@@ -455,7 +476,7 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
             + '<div class="pl-bar" id="plBar"><div class="pl-prog" id="plProg"></div></div>'
             + '</div>'
             + '<div class="pl-time" id="plTime">0:00 / 0:00</div>'
-            + '<div class="pl-viz" id="plViz"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+            + '<div class="pl-vol"><span>🔊</span><input type="range" id="plVol" min="0" max="100" value="100"></div>'
             + '<audio id="plAudio" preload="metadata"></audio>'
             + '</div>';
         var au = document.getElementById('plAudio');
@@ -465,8 +486,9 @@ input[type=range]{width:min(320px,68vw);accent-color:#ff2ec4;height:26px}
         var timeEl = document.getElementById('plTime');
         var nameEl = document.getElementById('plName');
         nameEl.textContent = (file && file.name) || 'audio';
-        plBars = document.getElementById('plViz').querySelectorAll('i');
         au.src = url;
+        var vol = document.getElementById('plVol');
+        vol.oninput = function () { au.volume = vol.value / 100; };
         btn.onclick = function () {
             ensureEq(au);
             if (au.paused) { au.play().catch(function () {}); }
