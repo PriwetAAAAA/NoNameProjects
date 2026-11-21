@@ -118,6 +118,15 @@
         } catch (_) {}
     }
 
+    var swReg = null;
+    function ensureSW() {
+        if (!('serviceWorker' in navigator)) return;
+        try {
+            navigator.serviceWorker.register('nn-sw.js').then(function (r) { swReg = r; }).catch(function () {});
+            navigator.serviceWorker.ready.then(function (r) { swReg = r; }).catch(function () {});
+        } catch (_) {}
+    }
+
     function systemNotify(text) {
         try {
             if (window.NativeNotify && window.NativeNotify.notify) {
@@ -127,7 +136,16 @@
         } catch (_) {}
         try {
             if (window.Notification && Notification.permission === 'granted') {
-                new Notification('NoName Chatter', { body: text, icon: 'mascot.png' });
+                var opts = {
+                    body: text,
+                    icon: 'mascot.png',
+                    badge: 'mascot.png',
+                    tag: 'nn-chat',
+                    renotify: true,
+                    silent: false
+                };
+                if (swReg && swReg.showNotification) swReg.showNotification('NoName Chatter', opts);
+                else new Notification('NoName Chatter', opts);
             }
         } catch (_) {}
     }
@@ -145,6 +163,7 @@
     }
 
     function boot() {
+        ensureSW();
         if (!readMe()) { setTimeout(boot, 800); return; }   // ждём логин
         var sb = getClient();
         if (!sb) { setTimeout(boot, 400); return; }
